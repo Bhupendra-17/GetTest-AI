@@ -8,7 +8,6 @@ export const registerUser = async (userData) => {
     });
     return response.json();
 };
-
 export const loginUser = async (credentials) => {
     const response = await fetch(`${API_BASE_URL}/auth/login`, {
         method: "POST",
