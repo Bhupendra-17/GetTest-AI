@@ -1,6 +1,19 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import axios from 'axios';
 
+const handleLogin = async () => {
+  try {
+    const response = await axios.post('http://localhost:8000/auth/login', {
+      email,
+      password,
+    });
+    console.log(response.data);
+    // Store token in localStorage & redirect
+  } catch (err) {
+    console.error(err);
+  }
+};
 const Login = () => {
   return (
     <div>

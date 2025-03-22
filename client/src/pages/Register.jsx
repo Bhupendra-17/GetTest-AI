@@ -1,5 +1,19 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import axios from 'axios';
+
+const handleSignup = async () => {
+  try {
+    const response = await axios.post('http://localhost:8000/auth/signup', {
+      username,
+      email,
+      password,
+    });
+    console.log(response.data);
+  } catch (err) {
+    console.error(err);
+  }
+};
 
 const Register = () => {
   return (

@@ -29,6 +29,24 @@ const Main = () => {
     navigate('/test', { state: { numQuestions, timeLimit } });
   };
 
+  const formData = new FormData();
+  formData.append('file', file);
+  formData.append('num_questions', numQuestions);
+
+  fetch('http://localhost:8000/generate-test', {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${localStorage.getItem('token')}`,
+    },
+    body: formData
+  })
+    .then(response => response.json())
+    .then(data => {
+      // Navigate to test page with data.questions
+    })
+    .catch(error => console.error(error));
+
+
   return (
     <div className='min-h-screen bg-gradient-to-br from-orange-100 to-yellow-200 flex flex-col overflow-x-hidden'>
       {/* Header Section */}
