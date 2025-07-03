@@ -1,124 +1,100 @@
 import React, { useState } from 'react';
-import axios from 'axios';
+import { useLocation, useNavigate } from 'react-router-dom';
 
 const Test = () => {
-    const [questions, setQuestions] = useState([]);
-    const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
-    const [selectedAnswers, setSelectedAnswers] = useState({});
-    const [file, setFile] = useState(null);
-    const [loading, setLoading] = useState(false);
+  const location = useLocation();
+  const navigate = useNavigate();
+  const { questions } = location.state || { questions: [] };
 
-    const handleFileChange = (e) => {
-        setFile(e.target.files[0]);
-    };
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [answers, setAnswers] = useState({});
 
-    const handleUpload = async () => {
-        if (!file) return;
+  const currentQuestion = questions[currentIndex];
 
-        setLoading(true);
-        const formData = new FormData();
-        formData.append('file', file);
+  const handleOptionSelect = (index, option) => {
+    setAnswers({ ...answers, [index]: option });
+  };
 
-        try {
-            const response = await axios.post('http://localhost:8000/generate-questions/', formData, {
-                headers: {
-                    'Content-Type': 'multipart/form-data',
-                },
-            });
-            const generatedQuestions = response.data.questions;
-            setQuestions(generatedQuestions);
-        } catch (error) {
-            console.error('Error generating questions:', error);
-        } finally {
-            setLoading(false);
-        }
-    };
+  const handleSubmit = () => {
+    navigate('/score', {
+      state: {
+        questions,
+        answers
+      }
+    });
+  };
 
-    const handleOptionSelect = (questionIndex, option) => {
-        setSelectedAnswers({ ...selectedAnswers, [questionIndex]: option });
-    };
-
-    const handleNext = () => {
-        if (currentQuestionIndex < questions.length - 1) {
-            setCurrentQuestionIndex(currentQuestionIndex + 1);
-        }
-    };
-
-    const handlePrev = () => {
-        if (currentQuestionIndex > 0) {
-            setCurrentQuestionIndex(currentQuestionIndex - 1);
-        }
-    };
-
-    const handleSubmit = () => {
-        alert('Test submitted!');
-        // Implement further submission logic as needed
-    };
-
-    if (loading) {
-        return <div>Loading...</div>;
-    }
-
-    if (questions.length === 0) {
-        return (
-            <div>
-                <input type="file" accept="application/pdf" onChange={handleFileChange} />
-                <button onClick={handleUpload}>Upload and Generate Questions</button>
-            </div>
-        );
-    }
-
-    const currentQuestion = questions[currentQuestionIndex];
-
-    return (
-        <div className='min-h-screen flex flex-col items-center justify-center bg-gray-100 p-4'>
-            <div className='w-full max-w-2xl bg-white shadow-lg rounded-2xl p-6 text-center'>
-                <h2 className='text-2xl font-bold text-gray-800 mb-4'>Mock Test</h2>
-                <div className='p-4 bg-gray-50 rounded-lg shadow-md'>
-                    <h3 className='text-xl font-semibold mb-4'>{currentQuestion.text}</h3>
-                    <div className='flex flex-col space-y-2'>
-                        {currentQuestion.options.map((option, index) => (
-                            <button
-                                key={index}
-                                className={`py-2 px-4 rounded-lg shadow ${
-                                    selectedAnswers[currentQuestionIndex] === option
-                                        ? 'bg-blue-500 text-white'
-                                        : 'bg-gray-200 hover:bg-gray-300'
-                                }`}
-                                onClick={() => handleOptionSelect(currentQuestionIndex, option)}
-                            >
-                                {option}
-                            </button>
-                        ))}
-                    </div>
-                </div>
-                <div className='flex justify-between mt-6'>
-                    <button
-                        onClick={handlePrev}
-                        className='bg-gray-300 px-4 py-2 rounded-lg shadow'
-                        disabled={currentQuestionIndex === 0}
-                    >
-                        Previous
-                    </button>
-                    {currentQuestionIndex === questions.length - 1 ? (
-                        <button
-                            onClick={handleSubmit}
-                            className='bg-green-500 text-white px-6 py-2 rounded-lg shadow hover:bg-green-600'
-                        >
-                            Submit
-                        </button>
-                    ) : (
-                        <button
-                            onClick={handleNext}
-                            className='bg-blue-500 text-white px-6 py-2 rounded-lg shadow hover:bg-blue-600'
-                        >
-                            Next
-                        </button>
-                    )}
-                </div>
-            </div>
+  return (
+    <div className="flex min-h-screen bg-gray-100">
+      {/* Sidebar */}
+      <div className="w-1/5 bg-white p-4 border-r">
+        <h3 className="font-bold text-xl mb-4 text-center">Question Panel</h3>
+        <div className="grid grid-cols-3 gap-2">
+          {questions.map((_, index) => (
+            <button
+              key={index}
+              onClick={() => setCurrentIndex(index)}
+              className={`rounded-full px-3 py-2 text-sm ${
+                answers[index] ? 'bg-green-500 text-white' : 'bg-gray-300'
+              } ${currentIndex === index ? 'ring-2 ring-orange-400' : ''}`}
+            >
+              {index + 1}
+            </button>
+          ))}
         </div>
-    );
+      </div>
+
+      {/* Main Panel */}
+      <div className="flex-1 p-8">
+        <div className="bg-white p-6 rounded-xl shadow-md">
+          <h2 className="text-xl font-bold mb-4">
+            Q{currentIndex + 1}. {currentQuestion.text}
+          </h2>
+          <div className="space-y-2">
+            {currentQuestion.options.map((option, idx) => (
+              <button
+                key={idx}
+                className={`block w-full text-left px-4 py-2 rounded-lg border ${
+                  answers[currentIndex] === option
+                    ? 'bg-blue-500 text-white border-blue-500'
+                    : 'bg-gray-100 hover:bg-gray-200'
+                }`}
+                onClick={() => handleOptionSelect(currentIndex, option)}
+              >
+                {option}
+              </button>
+            ))}
+          </div>
+
+          <div className="flex justify-between mt-6">
+            <button
+              onClick={() => setCurrentIndex((prev) => Math.max(prev - 1, 0))}
+              className="bg-gray-300 px-4 py-2 rounded"
+            >
+              Previous
+            </button>
+            {currentIndex === questions.length - 1 ? (
+              <button
+                onClick={handleSubmit}
+                className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
+              >
+                Submit Test
+              </button>
+            ) : (
+              <button
+                onClick={() =>
+                  setCurrentIndex((prev) => Math.min(prev + 1, questions.length - 1))
+                }
+                className="bg-orange-500 text-white px-4 py-2 rounded hover:bg-orange-600"
+              >
+                Next
+              </button>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
 };
 
 export default Test;

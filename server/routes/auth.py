@@ -1,30 +1,52 @@
-from fastapi import APIRouter, HTTPException
-from models import User
-from utils.jwt_handler import create_jwt_token
-from config import db
+from fastapi import APIRouter, HTTPException, Depends
+from models import User, UserLogin
 from passlib.context import CryptContext
+from utils.jwt_handler import create_access_token
+from fastapi import Request
 
-router = APIRouter()
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+router= APIRouter()
+
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated = "auto")
 
 @router.post("/register")
-async def register(user: User):
-    existing_user = await db.users.find_one({"email": user.email})
-    if existing_user:
-        raise HTTPException(status_code=400, detail="Email already registered")
+async def register_user(user: User, request: Request):
+    db = request.app.database
+    existing = await db.users.find_one({"email": user.email})
+    if existing:
+        raise HTTPException(status_code=400, detail="Email already registered.")
     
     hashed_password = pwd_context.hash(user.password)
-    user_data = user.model_dump()
-    user_data["password"] = hashed_password
+    user_dict = user.dict()
+    user_dict["password"] = hashed_password
 
-    await db.users.insert_one(user_data)
-    return {"message": "User registered successfully"}
+    await db.users.insert_one(user_dict)
+
+    # ✅ Create JWT token after registration
+    token = create_access_token({"sub": user.email})
+
+    return {
+        "access_token": token,
+        "token_type": "bearer",
+        "user": {
+            "name": user.name,
+            "email": user.email
+        }
+    }
 
 @router.post("/login")
-async def login(user: User):
+async def login_user(user: UserLogin, request: Request):
+    db = request.app.database
     db_user = await db.users.find_one({"email": user.email})
     if not db_user or not pwd_context.verify(user.password, db_user["password"]):
         raise HTTPException(status_code=401, detail="Invalid credentials")
 
-    token = create_jwt_token({"email": user.email, "id": str(db_user["_id"])})
-    return {"access_token": token}
+    token = create_access_token({"sub": user.email})
+
+    return {
+        "access_token": token,
+        "token_type": "bearer",
+        "user": {
+            "name": db_user.get("name", ""),
+            "email": db_user["email"]
+        }
+    }

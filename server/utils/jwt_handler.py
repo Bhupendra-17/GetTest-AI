@@ -1,12 +1,13 @@
 import os
-from datetime import datetime, timedelta
-from jose import jwt
+import jwt
+import time
+from dotenv import load_dotenv 
 
-SECRET_KEY = os.getenv("JWT_SECRET", "your_secret_key")
-ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_DAYS = int(os.getenv("TOKEN_EXPIRE_DAYS", 1))
+load_dotenv()
+JWT_SECRET = os.getenv("JWT_SECRET", "secret")
 
-def create_jwt_token(data: dict):
-    expiration = datetime.utcnow() + timedelta(days=ACCESS_TOKEN_EXPIRE_DAYS)
-    payload = {"exp": expiration, **data}
-    return jwt.encode(payload, SECRET_KEY, algorithm=ALGORITHM)
+def create_access_token(data:dict):
+    payload = data.copy()
+    payload.update({"exp": time.time()+1800}) #0.5 hr
+    token = jwt.encode(payload, JWT_SECRET, algorithm="HS256")
+    return token
