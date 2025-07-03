@@ -1,26 +1,38 @@
 from fastapi import FastAPI
-from routes.auth import router as auth_router
-from routes.test import router as test_router
-from server.api.endpoints import generate_question
+from routes import test, auth
+import motor.motor_asyncio
+import os
+from dotenv import load_dotenv
 from fastapi.middleware.cors import CORSMiddleware
+from middleware.size_limit import LimitUploadSizeMiddleware
 
-app = FastAPI(title="GetTest AI Backend")
+load_dotenv()
 
-# CORS Middleware
+app = FastAPI()
+
+# MongoDB Setup
+MONGO_DETAILS = os.getenv("MONGO_URI")
+client = motor.motor_asyncio.AsyncIOMotorClient(MONGO_DETAILS)
+database = client[os.getenv("DB_NAME")]
+app.database = database  # Attach to app so it can be accessed via request.app.database
+
+# CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173"],  # Frontend URL
+    allow_origins=["http://localhost:5173"],  # Vite frontend origin
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# Root Route
-@app.get("/")
-def root():
-    return {"message": "Welcome to GetTest AI!"}
-
 # Include Routers
-app.include_router(auth_router, prefix="/auth", tags=["Authentication"])
-app.include_router(test_router, prefix="/test", tags=["Test Generation"])
-app.include_router(generate_question.router, prefix="/generate", tags=["Question Generation"])
+app.include_router(test.router)
+app.include_router(auth.router)
+
+# Register middleware
+app.add_middleware(LimitUploadSizeMiddleware)
+
+
+@app.get("/")
+async def root():
+    return {"message": "Welcome to GetTest AI Backend"}

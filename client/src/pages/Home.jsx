@@ -1,17 +1,12 @@
-import React from 'react';
 import { Link } from 'react-router-dom';
-import Sidebar from '../components/Sidebar';
-import Header from '../components/Header';
+import Navbar from '../components/Navbar';
 import Image from '../assets/aptitude-test.png';
 
 const Home = () => {
   return (
     <div className='min-h-screen bg-orange-100 flex flex-col'>
       {/* Header Section */}
-      <div className='flex items-center'>
-        <Sidebar />
-        <Header />
-      </div>
+      <Navbar />
 
       {/* Body */}
       <div className='flex flex-col items-center py-10'>

@@ -1,11 +1,8 @@
-FastAPI         #	Web API framework
-Uvicorn	        #   Runs FastAPI server
-python-multipart #	Handles file uploads
-Motor	        #   Async MongoDB client
-PyMongo	        #   Synchronous MongoDB client
-OpenAI	        #   AI-based processing (e.g., text generation)
-python-jose	    #   JWT authentication
-PyPDF2	        #   Extracts text from PDFs
-python-dotenv	#   Manages environment variables
-pyjwt           #   For authentication
-requests        #   for request mgmt
+fastapi==0.104.1
+uvicorn==0.24.0
+pymongo
+motor
+python-multipart
+PyPDF2
+python-dotenv
+openai
