@@ -1,8 +1,9 @@
 from fastapi import APIRouter, HTTPException, Depends
-from models import User, UserLogin
+from models.user import User, UserLogin
 from passlib.context import CryptContext
 from utils.jwt_handler import create_access_token
 from fastapi import Request
+from bson import ObjectId
 
 router= APIRouter()
 
@@ -19,15 +20,18 @@ async def register_user(user: User, request: Request):
     user_dict = user.dict()
     user_dict["password"] = hashed_password
 
-    await db.users.insert_one(user_dict)
+    result = await db.users.insert_one(user_dict)
 
-    # ✅ Create JWT token after registration
+    # ✅ Get the inserted _id
+    user_id = str(result.inserted_id)
+
     token = create_access_token({"sub": user.email})
 
     return {
         "access_token": token,
         "token_type": "bearer",
         "user": {
+            "_id": user_id,
             "name": user.name,
             "email": user.email
         }
@@ -42,10 +46,12 @@ async def login_user(user: UserLogin, request: Request):
 
     token = create_access_token({"sub": user.email})
 
+    # ✅ Include the _id in the response
     return {
         "access_token": token,
         "token_type": "bearer",
         "user": {
+            "_id": str(db_user["_id"]),  # convert ObjectId to string
             "name": db_user.get("name", ""),
             "email": db_user["email"]
         }

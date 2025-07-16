@@ -1,59 +1,66 @@
 import { Link } from 'react-router-dom';
 import Navbar from '../components/Navbar';
+import Footer from '../components/Footer';
 import Image from '../assets/aptitude-test.png';
 
 const Home = () => {
   return (
-    <div className='min-h-screen bg-orange-100 flex flex-col'>
-      {/* Header Section */}
-      <Navbar />
+    <div className="relative min-h-screen flex flex-col">
+      <div className="absolute inset-0 bg-[linear-gradient(60deg,_rgb(247,_149,_51),_rgb(243,_112,_85),_rgb(239,_78,_123),_rgb(161,_102,_171),_rgb(80,_115,_184),_rgb(16,_152,_173),_rgb(7,_179,_155),_rgb(111,_186,_130))] z-0" />
 
-      {/* Body */}
-      <div className='flex flex-col items-center py-10'>
-        {/* Hero Section */}
-        <div className='text-center mb-6'>
-          <h1 className='text-3xl font-bold'>Welcome, Aspirant!</h1>
-          <h2 className='text-3xl font-bold'>Generate Mock Tests from PDF</h2>
-          <p className='text-lg text-gray-700 mt-2'>Generate Mock Tests Instantly from Any PDF!</p>
-        </div>
+      <div className="relative z-10 text-white">
+        <Navbar />
 
-        {/* Get Started Button */}
-        <Link to='/main' className='border border-gray-800 rounded-3xl py-2 px-6 shadow-2xl text-gray-800 text-xl font-bold transition duration-300 hover:bg-gray-800 hover:text-white'>
-          Get Started
-        </Link>
-
-        <div className='flex justify-around items-center my-4 gap-12'>
-          {/* Features Section */}
-          <div className='flex flex-wrap justify-center items-center gap-10 mt-8'>
-            <div className='w-full max-w-4xl bg-white shadow-lg rounded-2xl p-6'>
-              <h2 className='text-2xl font-semibold text-gray-800 mb-4'>Why Choose GetTest AI?</h2>
-              <ul className='list-disc list-inside text-gray-700 space-y-2'>
-                <li><strong>AI-Powered Question Generation</strong> – Smartly extracts key concepts.</li>
-                <li><strong>Customizable Test Size</strong> – Set a limit on the number of questions.</li>
-                <li><strong>Instant & Efficient</strong> – Generate tests in seconds.</li>
-                <li><strong>Versatile</strong> – Works with study guides, textbooks, and research papers.</li>
-              </ul>
-            </div>
-
+        <div className="flex flex-col items-center py-10">
+          <div className="text-center mb-6">
+            <h1 className="text-3xl font-bold">Welcome, Aspirant!</h1>
+            <h2 className="text-3xl font-bold">Generate Mock Tests from PDF</h2>
+            <p className="text-lg mt-2">Generate Mock Tests Instantly from Any PDF!</p>
           </div>
-          <img src={Image} alt='Mock Test' className='h-52' />
-        </div>
-        {/* Getting Started Section */}
-        <div className='w-full max-w-4xl bg-white shadow-lg rounded-2xl p-6 mt-8 hover:shadow-2xl transition duration-300'>
-          <h2 className='text-2xl font-semibold text-gray-800 mb-4'>Getting Started in 3 Simple Steps</h2>
-          <div className='space-y-4'>
-            {[
-              { step: 'Step 1: Upload Your PDF', desc: 'Select a file, and our AI will analyze the content.' },
-              { step: 'Step 2: Set Your Preferences', desc: 'Choose the number of questions you want in your mock test.' },
-              { step: 'Step 3: Generate & Practice', desc: 'Receive your test instantly and start practicing!' }
-            ].map((item, index) => (
-              <div key={index} className='p-2 bg-yellow-100 border-l-4 border-orange-400 rounded hover:bg-orange-200 transition duration-300'>
-                <h3 className='text-lg font-medium'>{item.step}</h3>
-                <p className='text-gray-700'>{item.desc}</p>
+
+          <Link
+            to="/main"
+            className="rounded-3xl py-2 px-6 shadow-2xl bg-gradient-to-r from-orange-500 to-red-500 hover:from-gray-800 hover:to-gray-600 text-white text-xl font-bold transition duration-300"
+          >
+            Get Started
+          </Link>
+
+          <div className="flex justify-around items-center my-4 gap-12">
+            <div className="flex flex-wrap justify-center items-center gap-10 mt-8">
+              <div className="w-full max-w-4xl bg-white shadow-lg rounded-2xl p-6">
+                <h2 className="text-2xl font-semibold text-gray-800 mb-4">Why Choose GetTest AI?</h2>
+                <ul className="list-disc list-inside text-gray-700 space-y-2">
+                  <li><strong>AI-Powered Question Generation</strong> – Smartly extracts key concepts.</li>
+                  <li><strong>Customizable Test Size</strong> – Set a limit on the number of questions.</li>
+                  <li><strong>Instant & Efficient</strong> – Generate tests in seconds.</li>
+                  <li><strong>Versatile</strong> – Works with study guides, textbooks, and research papers.</li>
+                </ul>
               </div>
-            ))}
+            </div>
+            <img src={Image} alt="Mock Test" className="h-52" />
+          </div>
+
+          <div className="w-full max-w-4xl bg-white shadow-lg rounded-2xl p-6 mt-8 hover:shadow-2xl transition duration-300">
+            <h2 className="text-2xl font-semibold text-gray-800 mb-4">Getting Started in 3 Simple Steps</h2>
+            <div className="space-y-4">
+              {[
+                { step: 'Step 1: Upload Your PDF', desc: 'Select a file, and our AI will analyze the content.' },
+                { step: 'Step 2: Set Your Preferences', desc: 'Choose the number of questions you want in your mock test.' },
+                { step: 'Step 3: Generate & Practice', desc: 'Receive your test instantly and start practicing!' }
+              ].map((item, index) => (
+                <div
+                  key={index}
+                  className="p-2 bg-yellow-100 border-l-4 border-orange-400 rounded hover:bg-orange-200 transition duration-300"
+                >
+                  <h3 className="text-lg text-black font-medium">{item.step}</h3>
+                  <p className="text-gray-700">{item.desc}</p>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
+
+        <Footer />
       </div>
     </div>
   );

@@ -1,10 +1,11 @@
 from fastapi import FastAPI
-from routes import test, auth
+from routes import test, auth, users
 import motor.motor_asyncio
 import os
 from dotenv import load_dotenv
 from fastapi.middleware.cors import CORSMiddleware
 from middleware.size_limit import LimitUploadSizeMiddleware
+from fastapi.staticfiles import StaticFiles
 
 load_dotenv()
 
@@ -28,9 +29,11 @@ app.add_middleware(
 # Include Routers
 app.include_router(test.router)
 app.include_router(auth.router)
-
+app.include_router(users.router)
 # Register middleware
 app.add_middleware(LimitUploadSizeMiddleware)
+
+app.mount("/static", StaticFiles(directory="static"), name="static")
 
 
 @app.get("/")

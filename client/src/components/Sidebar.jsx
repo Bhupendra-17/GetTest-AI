@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-
+import {Link} from 'react-router-dom';
 const Sidebar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const sidebarRef = useRef(null); // Reference to the sidebar
@@ -38,31 +38,19 @@ const Sidebar = () => {
       >
         <button
           onClick={toggleSidebar}
-          className="p-2 text-2xl text-blue-500 rounded-lg hover:bg-gray-100 transition"
+          className="p-3 mb-2 text-2xl  rounded-full hover:bg-sky-500 hover:cursor-pointer transition"
         >
           <i className="fa-solid fa-bars"></i>
         </button>
         <ul>
-          <li className="py-1.5 -ml-2 px-2 w-full hover:text-blue-700 hover:font-semibold">
-            <a href="#catalog">Catalog</a>
+          <li className="py-1.5 -ml-2 px-2 w-full hover:text-gray-900 hover:font-semibold">
+            <Link to='/'>Home</Link>
           </li>
-          <li className="py-1.5 -ml-2 px-2 w-full hover:text-blue-700 hover:font-semibold">
-            <a href="#how">How It Works</a>
+          <li className="py-1.5 -ml-2 px-2 w-full hover:text-gray-900 hover:font-semibold">
+            <Link to='/main'>Get Started</Link>
           </li>
-          <li className="py-1.5 -ml-2 px-2 w-full hover:text-blue-700 hover:font-semibold">
-            <a href="#price">Pricing</a>
-          </li>
-          <li className="py-1.5 -ml-2 px-2 w-full hover:text-blue-700 hover:font-semibold">
-            <a href="#blog">Blog</a>
-          </li>
-          <li className="py-1.5 -ml-2 px-2 w-full hover:text-blue-700 hover:font-semibold">
-            <a href="#services">Services</a>
-          </li>
-          <li className="py-1.5 -ml-2 px-2 w-full hover:text-blue-700 hover:font-semibold">
-            <a href="#use">Use-cases</a>
-          </li>
-          <li className="py-1.5 -ml-2 px-2 w-full hover:text-blue-700 hover:font-semibold">
-            <a href="#help">Need Help?</a>
+          <li className="py-1.5 -ml-2 px-2 w-full hover:text-gray-900 hover:font-semibold">
+            <Link to='/'>About</Link>
           </li>
         </ul>
       </div>
@@ -71,7 +59,7 @@ const Sidebar = () => {
       <div className="flex ">
         <button
           onClick={toggleSidebar}
-          className="m-4 p-2 text-2xl text-blue-500 rounded-lg hover:bg-gray-100 transition"
+          className="m-4 p-3 text-2xl rounded-full hover:bg-sky-500 hover:cursor-pointer transition"
         >
           <i className="fa-solid fa-bars"></i>
         </button>
