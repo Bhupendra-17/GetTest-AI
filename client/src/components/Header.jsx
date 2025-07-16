@@ -19,14 +19,18 @@ const Header = () => {
   const handleLogout = () => {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
+    localStorage.removeItem('userId');
     setUser(null);
     navigate('/login');
   };
 
   return (
-    <header className="w-full bg-amber-50 shadow-md px-4 py-1 flex justify-between items-center">
+    <header className="mt-2 w-full rounded-2xl mx-3 bg-[linear-gradient(60deg,_#ffc1cd,_#d3c7f1,_#b7e6f9,_#9ef2ff)]
+hover:bg-[linear-gradient(60deg,_#ffb4c1,_#d3c7f1,_#b7e6f9,_#9ef2e6)]
+
+ shadow-md px-3 py-1 flex justify-between items-center">
       <Link to='/'>
-        <img src={Logo} alt="Logo" className='h-12 md:h-14 hover:opacity-90 transition duration-200' />
+        <img src={Logo} alt="Logo" className='h-12 md:h-14 rounded-2xl hover:opacity-90 transition duration-200' />
       </Link>
 
       {!user ? (

@@ -23,6 +23,7 @@ const Login = () => {
       // Save token in localStorage (or use cookies if preferred)
       localStorage.setItem('token', access_token);
       localStorage.setItem('user', JSON.stringify(user));
+      localStorage.setItem('userId', user._id);
 
       // Redirect to home or test page
       navigate('/');
@@ -33,9 +34,9 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen bg-orange-100 px-2">
+    <div className="min-h-screen bg-[linear-gradient(60deg,_rgb(247,_149,_51),_rgb(243,_112,_85),_rgb(239,_78,_123),_rgb(161,_102,_171),_rgb(80,_115,_184),_rgb(16,_152,_173),_rgb(7,_179,_155),_rgb(111,_186,_130))]  px-2">
       <Navbar />
-      <div className="flex items-center justify-center">
+      <div className="flex items-center justify-center py-4">
         <div className="bg-white p-8 rounded-lg shadow-lg w-full max-w-md">
           <h2 className="text-2xl font-bold mb-6 text-gray-900">Login</h2>
 

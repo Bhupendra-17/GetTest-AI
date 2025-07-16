@@ -1,6 +1,8 @@
-from fastapi import APIRouter, UploadFile, File, Form, HTTPException
+from fastapi import APIRouter, UploadFile, File, Form, HTTPException, Depends, Request
 from utils.pdf_processor import extract_text_from_pdf
 from utils.ai_generator import generate_questions
+from models.test import TestResult
+from bson import ObjectId
 import os
 import uuid
 
@@ -77,3 +79,30 @@ async def upload_and_read_pdf(file: UploadFile = File(...)):
     
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error reading PDF: {str(e)}")
+    
+# Save test result
+@router.post("/save-result/")
+async def save_test_result(data: TestResult, request: Request):
+    try:
+        db = request.app.database
+        result_dict = data.dict()
+        result_dict["user_id"] = ObjectId(result_dict["user_id"])
+        await db["test_results"].insert_one(result_dict)
+        return {"message": "Test result saved successfully"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# Get all results for a user
+@router.get("/user-results/{user_id}")
+async def get_user_results(user_id: str, request: Request):
+    try:
+        db = request.app.database
+        results = await db["test_results"].find({"user_id": ObjectId(user_id)}).to_list(length=100)
+        # Convert ObjectId to string
+        for r in results:
+            r["_id"] = str(r["_id"])
+            r["user_id"] = str(r["user_id"])
+        return results
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
