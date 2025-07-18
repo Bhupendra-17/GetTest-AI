@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link , useNavigate} from 'react-router-dom';
 import axios from 'axios';
 import Navbar from '../components/Navbar';
 
@@ -8,22 +8,29 @@ const Register = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [message, setMessage] = useState('');
+  const [gender, setGender] = useState('male');
+  const [profilePic, setProfilePic] = useState('https://cdn-icons-png.flaticon.com/512/236/236831.png');
 
-  const handleSignup = async () => {
+  const handleSignup = async (e) => {
+    e.preventDefault();
     try {
       const response = await axios.post('http://localhost:8000/register', {
         name,
         email,
-        password
+        password,
+        gender,
+        profilePic, // ✅ Include if you're sending this
       });
 
       const { access_token, user } = response.data;
 
-      // ✅ Auto-login logic
       localStorage.setItem('token', access_token);
       localStorage.setItem('user', JSON.stringify(user));
+      localStorage.setItem('userId', user._id);
 
-      // navigate('/'); // ✅ Redirect to homepage after registration
+      // Redirect or update UI after success
+      navigate('/dashboard'); // or wherever you want to go
+
     } catch (err) {
       console.error(err);
       setMessage(err.response?.data?.detail || 'Registration failed');
@@ -78,8 +85,13 @@ const Register = () => {
               />
             </div>
             {message && (
-              <div className="text-sm text-red-600 mb-2">{message}</div>
+              <div className="text-sm text-red-600 mb-2">
+                {Array.isArray(message)
+                  ? message.map((err, idx) => <div key={idx}>{err.msg || String(err)}</div>)
+                  : String(message)}
+              </div>
             )}
+
             <div className="flex items-baseline justify-between">
               <button
                 onClick={handleSignup}

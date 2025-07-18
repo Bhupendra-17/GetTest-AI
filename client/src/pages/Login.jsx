@@ -10,7 +10,7 @@ const Login = () => {
   const [error, setError] = useState('');
 
   const handleLogin = async (e) => {
-    e.preventDefault(); // prevent form reload
+    e.preventDefault(); // Prevent form reload
 
     try {
       const response = await axios.post('http://localhost:8000/login', {
@@ -18,14 +18,13 @@ const Login = () => {
         password,
       });
 
-      const { access_token,user } = response.data;
+      const { access_token, user } = response.data;
 
-      // Save token in localStorage (or use cookies if preferred)
+      // Save to localStorage
       localStorage.setItem('token', access_token);
       localStorage.setItem('user', JSON.stringify(user));
-      localStorage.setItem('userId', user._id);
+      localStorage.setItem('userId', user._id); // Ensure `_id` exists in backend response
 
-      // Redirect to home or test page
       navigate('/');
     } catch (err) {
       console.error(err);

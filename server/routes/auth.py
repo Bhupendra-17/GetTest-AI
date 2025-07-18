@@ -33,7 +33,9 @@ async def register_user(user: User, request: Request):
         "user": {
             "_id": user_id,
             "name": user.name,
-            "email": user.email
+            "email": user.email,
+            "gender": user.gender,
+            "profilePic": user.profilePic
         }
     }
 
@@ -53,6 +55,8 @@ async def login_user(user: UserLogin, request: Request):
         "user": {
             "_id": str(db_user["_id"]),  # convert ObjectId to string
             "name": db_user.get("name", ""),
-            "email": db_user["email"]
+            "email": db_user["email"],
+            "gender": db_user.get("gender", "male"),
+            "profilePic": db_user.get("profilePic", "")
         }
     }

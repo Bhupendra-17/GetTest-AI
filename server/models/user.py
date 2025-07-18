@@ -6,25 +6,10 @@ from datetime import datetime
 class User(BaseModel):
     name: str
     email: EmailStr
-    password: str  # hashed in DB
-
+    password: str
+    gender: Optional[str] = "male"
+    profilePic: Optional[str] = "https://cdn-icons-png.flaticon.com/512/236/236831.png"
 
 class UserLogin(BaseModel):
     email: EmailStr
     password: str
-
-
-class QuestionAnswer(BaseModel):
-    text: str
-    options: List[str]
-    answer: str
-    userAnswer: Optional[str] = None
-
-
-class TestResult(BaseModel):
-    user_id: str
-    title: str
-    score: int
-    total: int
-    date: datetime = Field(default_factory=datetime.utcnow)
-    questions: List[QuestionAnswer]

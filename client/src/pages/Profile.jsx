@@ -4,30 +4,42 @@ import Footer from '../components/Footer';
 import axios from 'axios';
 
 const Profile = () => {
-  const [user, setUser] = useState(null);
   const [editMode, setEditMode] = useState(false);
-  const [formData, setFormData] = useState({ name: '', email: '', profilePic: '' });
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    gender: '',
+    profilePic: ''
+  });
   const [testHistory, setTestHistory] = useState([]);
   const [bestScore, setBestScore] = useState(null);
   const [averageScore, setAverageScore] = useState(null);
-  const [loading, setLoading] = useState(false);
-  const [previewImage, setPreviewImage] = useState(null); // <--- new
+  const [message, setMessage] = useState(null); // Optional error handling
 
   useEffect(() => {
     fetchUserProfile();
     fetchTestHistory();
   }, []);
 
+  const getProfilePicByGender = (gender) => {
+    if (gender === 'male')
+      return 'https://cdn-icons-png.flaticon.com/512/6997/6997671.png';
+    if (gender === 'female')
+      return 'https://cdn-icons-png.flaticon.com/512/6997/6997662.png';
+    return 'https://cdn-icons-png.flaticon.com/512/847/847969.png';
+  };
+
   const fetchUserProfile = async () => {
     const userId = localStorage.getItem("userId");
     if (!userId) return;
+
     try {
       const { data } = await axios.get(`http://localhost:8000/user/${userId}`);
-      setUser(data);
       setFormData({
-        name: data.username,
+        name: data.name,
         email: data.email,
-        profilePic: data.profilePic || '',
+        gender: data.gender || '',
+        profilePic: data.profilePic || getProfilePicByGender(data.gender),
       });
     } catch (err) {
       console.error("Failed to fetch profile", err);
@@ -37,6 +49,7 @@ const Profile = () => {
   const fetchTestHistory = async () => {
     const userId = localStorage.getItem("userId");
     if (!userId) return;
+
     try {
       const { data } = await axios.get(`http://localhost:8000/user/${userId}/tests`);
       setTestHistory(data.tests || []);
@@ -48,11 +61,9 @@ const Profile = () => {
 
   const calculateScores = (tests) => {
     if (!tests.length) return;
-    const scores = tests.map((test) => test.score);
-    const best = Math.max(...scores);
-    const average = scores.reduce((a, b) => a + b, 0) / scores.length;
-    setBestScore(best);
-    setAverageScore(average.toFixed(2));
+    const scores = tests.map(test => test.score);
+    setBestScore(Math.max(...scores));
+    setAverageScore((scores.reduce((a, b) => a + b, 0) / scores.length).toFixed(2));
   };
 
   const handleSave = async (e) => {
@@ -60,112 +71,71 @@ const Profile = () => {
     const userId = localStorage.getItem("userId");
     if (!userId) return;
 
-    let imageUrl = formData.profilePic;
+    const profilePic = getProfilePicByGender(formData.gender);
 
-    // Upload new profile pic if selected
-    if (formData.newProfileFile) {
-      const uploadData = new FormData();
-      uploadData.append("file", formData.newProfileFile);
-
-      try {
-        const res = await fetch(`http://localhost:8000/user/${userId}/upload-profile-pic`, {
-          method: 'POST',
-          body: uploadData,
-        });
-        const data = await res.json();
-        if (res.ok) {
-          imageUrl = data.url;
-        }
-      } catch (err) {
-        console.error("Image upload failed", err);
-      }
-    }
-
-    // Update profile with new name and/or pic
     try {
       await axios.put(`http://localhost:8000/user/${userId}`, {
         name: formData.name,
-        profilePic: imageUrl,
+        gender: formData.gender,
+        profilePic
       });
+
+      const storedUser = JSON.parse(localStorage.getItem("user")) || {};
+      localStorage.setItem("user", JSON.stringify({
+        ...storedUser,
+        name: formData.name,
+        profilePic
+      }));
+
       setEditMode(false);
-      setPreviewImage(null);
       fetchUserProfile();
     } catch (err) {
       console.error("Error updating profile", err);
+      setMessage(err.response?.data?.detail || 'Update failed');
     }
   };
-
-
-  const handleImageChange = (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-
-    // Generate preview URL
-    const previewUrl = URL.createObjectURL(file);
-    setPreviewImage(previewUrl);
-
-    // Temporarily store image to upload later
-    const uploadData = new FormData();
-    uploadData.append('file', file);
-
-    // Store the file in formData (we’ll upload this only on Save)
-    setFormData((prev) => ({
-      ...prev,
-      newProfileFile: file // keep original file
-    }));
-  };
-  const handleCancelImage = () => {
-    setPreviewImage(null);
-    setFormData((prev) => ({ ...prev, newProfileFile: null }));
-  };
-
 
   return (
     <div className="min-h-screen bg-gradient-to-tr from-orange-100 via-pink-100 to-blue-100">
       <Navbar />
       <div className="max-w-5xl mx-auto mt-10 p-8 bg-white rounded-2xl shadow-xl">
+        {/* Profile Header */}
         <div className="flex flex-col md:flex-row items-center gap-8 mb-10">
-          {/* Profile Image */}
           <div className="relative">
             <div className="w-32 h-32 rounded-full border-4 border-blue-500 p-1 bg-white shadow-md">
               <img
-                src={previewImage || formData.profilePic}
+                src={formData.profilePic || getProfilePicByGender(formData.gender)}
                 alt="Profile"
                 className="w-full h-full object-cover rounded-full"
               />
             </div>
 
             {editMode && (
-              <>
-                <label className="absolute bottom-0 right-0 bg-blue-600 text-white p-2 rounded-full cursor-pointer hover:bg-blue-700 transition">
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={handleImageChange}
-                    className="hidden"
-                  />
-                  ✏️
-                </label>
-
-                {previewImage && (
-                  <button
-                    type="button"
-                    onClick={handleCancelImage}
-                    className="absolute top-0 right-0 bg-red-500 text-white px-2 py-1 text-xs rounded-full hover:bg-red-600 transition"
-                  >
-                    Cancel
-                  </button>
-                )}
-              </>
+              <div className="mt-4">
+                <label className="block text-sm font-medium text-gray-700 mb-1">Gender</label>
+                <select
+                  value={formData.gender}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      gender: e.target.value,
+                      profilePic: getProfilePicByGender(e.target.value),
+                    })
+                  }
+                  className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none transition"
+                  required
+                >
+                  <option value="">Select Gender</option>
+                  <option value="male">Male</option>
+                  <option value="female">Female</option>
+                </select>
+              </div>
             )}
           </div>
 
-
-          {/* Profile Details / Form */}
           <div className="flex-1 bg-white p-6 rounded-xl shadow-md w-full">
             {editMode ? (
               <form onSubmit={handleSave} className="space-y-6">
-                {/* Name */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
                   <input
@@ -173,12 +143,10 @@ const Profile = () => {
                     value={formData.name}
                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                     className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none transition"
-                    placeholder="Your Name"
                     required
                   />
                 </div>
 
-                {/* Email (readonly) */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
                   <input
@@ -189,7 +157,14 @@ const Profile = () => {
                   />
                 </div>
 
-                {/* Action Buttons */}
+                {message && (
+                  <div className="text-sm text-red-600 mb-2">
+                    {Array.isArray(message)
+                      ? message.map((m, i) => <div key={i}>{m.msg || String(m)}</div>)
+                      : String(message)}
+                  </div>
+                )}
+
                 <div className="flex items-center gap-4 pt-2">
                   <button
                     type="submit"
@@ -221,7 +196,7 @@ const Profile = () => {
           </div>
         </div>
 
-
+        {/* Stats */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-center mb-10">
           <div className="bg-blue-50 p-5 rounded-lg shadow">
             <h4 className="text-blue-700 font-semibold">Tests Taken</h4>
@@ -237,6 +212,7 @@ const Profile = () => {
           </div>
         </div>
 
+        {/* Test History Table */}
         <div>
           <h2 className="text-xl font-bold mb-4 text-gray-800">Test History</h2>
           <div className="overflow-x-auto">
@@ -250,8 +226,8 @@ const Profile = () => {
                 </tr>
               </thead>
               <tbody>
-                {testHistory.map((test, index) => (
-                  <tr key={index} className="border-t">
+                {testHistory.length ? testHistory.map((test, i) => (
+                  <tr key={i} className="border-t">
                     <td className="px-4 py-2">{new Date(test.date).toLocaleDateString()}</td>
                     <td className="px-4 py-2">{test.title}</td>
                     <td className="px-4 py-2">{test.score}</td>
@@ -259,8 +235,7 @@ const Profile = () => {
                       <button className="text-blue-600 hover:underline">View Details</button>
                     </td>
                   </tr>
-                ))}
-                {testHistory.length === 0 && (
+                )) : (
                   <tr>
                     <td colSpan="4" className="text-center text-gray-400 py-4">
                       No test history available.

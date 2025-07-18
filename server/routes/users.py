@@ -11,6 +11,7 @@ router = APIRouter()
 
 class UserProfileUpdate(BaseModel):
   name: str
+  gender: Optional[str] = None
   profilePic: Optional[str] = None
 
 # ---------- Get User Profile ----------
@@ -23,7 +24,7 @@ async def get_user_profile(user_id: str, request: Request):
     raise HTTPException(status_code=404, detail="User not found")
 
   user["_id"] = str(user["_id"]) # Convert ObjectId to string
-  return {"username": user.get("name"), "email": user.get("email")}
+  return {"name": user.get("name"), "email": user.get("email")}
 
 # ---------- Update User Profile ----------
 
