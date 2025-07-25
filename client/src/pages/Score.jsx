@@ -7,8 +7,12 @@ const Score = () => {
   const { questions, answers, timeTaken } = location.state || {};
 
   const correctAnswers = questions.filter((q, idx) => {
-    const ans = q.answer || q.options[0]; // fallback
-    return answers[idx] === ans;
+    const correctAnswerText =
+      typeof q.answer === 'number'
+        ? q.options[q.answer].toString().trim()
+        : (q.answer || q.options[0]).toString().trim();
+    const selectedAnswer = (answers[idx] || "").toString().trim();
+    return correctAnswerText === selectedAnswer; 
   }).length;
 
   const data = [
@@ -52,16 +56,21 @@ const Score = () => {
                 <strong>Q{idx + 1}:</strong> {q.text}
               </p>
               {q.options.map((opt, i) => {
-                const isCorrect = opt === (q.answer || q.options[0]);
-                const isSelected = answers[idx] === opt;
+                const correctAnswer = (q.answer || q.options[0]).toString().trim();
+                const selectedAnswer = (answers[idx] || "").toString().trim();
+                const optionText = opt.toString().trim();
+
+                const isCorrect = optionText === correctAnswer;
+                const isSelected = optionText === selectedAnswer;
+
                 return (
                   <p
                     key={i}
                     className={`px-3 py-1 rounded ${isCorrect
-                        ? 'bg-green-200'
-                        : isSelected
-                          ? 'bg-red-200'
-                          : 'bg-gray-100'
+                      ? 'bg-green-200'
+                      : isSelected
+                        ? 'bg-red-200'
+                        : 'bg-gray-100'
                       }`}
                   >
                     {opt}

@@ -8,7 +8,7 @@ const Register = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [message, setMessage] = useState('');
-  const [gender, setGender] = useState('male');
+  const [gender, setGender] = useState('');
   const [profilePic, setProfilePic] = useState('https://cdn-icons-png.flaticon.com/512/236/236831.png');
 
   const handleSignup = async (e) => {

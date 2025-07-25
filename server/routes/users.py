@@ -13,37 +13,49 @@ class UserProfileUpdate(BaseModel):
   name: str
   gender: Optional[str] = None
   profilePic: Optional[str] = None
-
 # ---------- Get User Profile ----------
 
 @router.get("/user/{user_id}")
 async def get_user_profile(user_id: str, request: Request):
-  db = request.app.database
-  user = await db["users"].find_one({"_id": ObjectId(user_id)})
-  if not user:
-    raise HTTPException(status_code=404, detail="User not found")
+    db = request.app.database
+    user = await db["users"].find_one({"_id": ObjectId(user_id)})
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
 
-  user["_id"] = str(user["_id"]) # Convert ObjectId to string
-  return {"name": user.get("name"), "email": user.get("email")}
+    user["_id"] = str(user["_id"])  # Convert ObjectId to string
 
-# ---------- Update User Profile ----------
+    return {
+        "name": user.get("name"),
+        "email": user.get("email"),
+        "gender": user.get("gender"),              # ✅ Added gender
+        "profilePic": user.get("profilePic")       # ✅ Added profile picture
+    }
 
 @router.put("/user/{user_id}")
 async def update_user_profile(user_id: str, data: UserProfileUpdate, request: Request):
-  db = request.app.database
+    db = request.app.database
+    update_data = {k: v for k, v in data.dict(exclude_unset=True).items() if v is not None}
 
-  update_data = {k: v for k, v in data.dict(exclude_unset=True).items() if v is not None}
-  if not update_data:
-    raise HTTPException(status_code=400, detail="No valid fields to update")
+    # 🔁 Automatically update profilePic based on gender
+    if "gender" in update_data:
+        if update_data["gender"] == "male":
+            update_data["profilePic"] = "https://cdn-icons-png.flaticon.com/512/6997/6997671.png"
+        elif update_data["gender"] == "female":
+            update_data["profilePic"] = "https://cdn-icons-png.flaticon.com/512/6997/6997662.png"
+        else:
+            update_data["profilePic"] = "https://cdn-icons-png.flaticon.com/512/847/847969.png"
 
-  result = await db["users"].update_one(
-    {"_id": ObjectId(user_id)},
-    {"$set": update_data}
-  )
-  if result.matched_count == 0:
-    raise HTTPException(status_code=404, detail="User not found")
+    if not update_data:
+        raise HTTPException(status_code=400, detail="No valid fields to update")
 
-  return {"message": "Profile updated", "status_code": 200}
+    result = await db["users"].update_one(
+        {"_id": ObjectId(user_id)},
+        {"$set": update_data}
+    )
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    return {"message": "Profile updated", "status_code": 200}
 
 # ---------- Upload Profile Picture ----------
 
