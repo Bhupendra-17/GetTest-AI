@@ -1,5 +1,5 @@
-import { useLocation } from 'react-router-dom';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
+import { useParams } from 'react-router-dom';
 import axios from 'axios';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
@@ -7,23 +7,30 @@ import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from 'recharts';
 
 const COLORS = ['#10b981', '#ef4444', '#9ca3af']; // Green, Red, Gray
 
-const Score = () => {
-  const location = useLocation();
-  const { questions = [], answers = [], timeTaken = 0 } = location.state || {};
-  const userId = localStorage.getItem("userId");
+const ScorewithId = () => {
+  const { testId } = useParams();
+  const [testData, setTestData] = useState(null);
 
-  const correctAnswers = questions.filter((q, idx) => {
-    const selected = (answers[idx] || "").toString().trim();
-    const selectedLetter = selected.slice(0, 1);
-    return selectedLetter === q.answer;
-  }).length;
+  useEffect(() => {
+    if (!testId) return;
+    axios.get(`http://localhost:8000/test/${testId}`)
+      .then((res) => setTestData(res.data))
+      .catch((err) => console.error("Error fetching test data:", err));
+  }, [testId]);
 
-  const notAttempted = questions.filter((_, idx) => {
-    const selected = (answers[idx] || "").toString().trim();
-    return selected === "";
-  }).length;
+  if (!testData) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-100">
+        <p className="text-xl font-semibold">Loading test result...</p>
+      </div>
+    );
+  }
 
-  const incorrectAnswers = questions.length - correctAnswers - notAttempted;
+  const { questions = [], timeTaken } = testData;
+  const total = questions.length;
+  const correctAnswers = questions.filter(q => q.userAnswer === q.answer).length;
+  const notAttempted = questions.filter(q => !q.userAnswer).length;
+  const incorrectAnswers = total - correctAnswers - notAttempted;
 
   const data = [
     { name: 'Correct', value: correctAnswers },
@@ -31,32 +38,8 @@ const Score = () => {
     { name: 'Not Answered', value: notAttempted },
   ];
 
-  useEffect(() => {
-    if (!questions.length || !userId) return;
-
-    const formattedQuestions = questions.map((q, idx) => ({
-      text: q.text,
-      options: q.options,
-      answer: q.answer,
-      userAnswer: (answers[idx] || "").toString().trim().slice(0, 1),
-    }));
-
-    const payload = {
-      user_id: userId,
-      title: "Mock Test",
-      score: correctAnswers,
-      total: questions.length,
-      timeTaken,
-      questions: formattedQuestions
-    };
-
-    axios.post("http://localhost:8000/submit-test", payload)
-      .then(res => console.log("Saved:", res.data))
-      .catch(err => console.error("Error saving result:", err));
-  }, [questions, answers, timeTaken, userId, correctAnswers]);
-
   return (
-    <div className="w-full bg-[linear-gradient(60deg,_rgb(247,_149,_51),_rgb(243,_112,_85),_rgb(239,_78,_123),_rgb(161,_102,_171),_rgb(80,_115,_184),_rgb(16,_152,_173),_rgb(7,_179,_155),_rgb(111,_186,_130))] z-0 min-h-screen">
+    <div className="w-full bg-[linear-gradient(60deg,_rgb(247,_149,_51),_rgb(243,_112,_85),_rgb(239,_78,_123),_rgb(161,_102,_171),_rgb(80,_115,_184),_rgb(16,_152,_173),_rgb(7,_179,_155),_rgb(111,_186,_130))] min-h-screen">
       <Navbar />
       <div className="max-w-4xl mx-auto bg-white shadow-lg p-6 rounded-xl mt-6">
         <h2 className="text-2xl font-bold text-center mb-4">Your Scorecard</h2>
@@ -101,7 +84,7 @@ const Score = () => {
         <div className="flex justify-between gap-4">
           <div className="flex justify-between items-center w-full bg-blue-50 border border-blue-200 rounded-lg px-4 py-2 shadow-sm">
             <span className="font-medium text-gray-700">Total Score</span>
-            <span className="font-bold text-blue-600">{correctAnswers} / {questions.length}</span>
+            <span className="font-bold text-blue-600">{correctAnswers} / {total}</span>
           </div>
           <div className="flex justify-between items-center w-full bg-green-50 border border-green-200 rounded-lg px-4 py-2 shadow-sm">
             <span className="font-medium text-gray-700">Time Taken</span>
@@ -117,12 +100,9 @@ const Score = () => {
                 <strong>Q{idx + 1}:</strong> {q.text}
               </p>
               {q.options.map((opt, i) => {
-                const selected = (answers[idx] || "").toString().trim();
-                const selectedLetter = selected.slice(0, 1);
                 const optionLetter = opt.trim().slice(0, 1);
-
                 const isCorrect = optionLetter === q.answer;
-                const isSelected = selectedLetter === optionLetter;
+                const isSelected = optionLetter === q.userAnswer;
 
                 return (
                   <p
@@ -151,4 +131,4 @@ const Score = () => {
   );
 };
 
-export default Score;
+export default ScorewithId;

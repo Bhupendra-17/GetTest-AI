@@ -1,10 +1,12 @@
 import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import axios from 'axios';
 
 const Profile = () => {
   const [editMode, setEditMode] = useState(false);
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -51,7 +53,7 @@ const Profile = () => {
     if (!userId) return;
 
     try {
-      const { data } = await axios.get(`http://localhost:8000/user/${userId}/tests`);
+      const { data } = await axios.get(`http://localhost:8000/history/${userId}`);
       setTestHistory(data.tests || []);
       calculateScores(data.tests || []);
     } catch (err) {
@@ -213,31 +215,55 @@ const Profile = () => {
         </div>
 
         {/* Test History Table */}
-        <div>
+        {/* Test History Table */}
+        <div className="mt-8">
           <h2 className="text-xl font-bold mb-4 text-gray-800">Test History</h2>
-          <div className="overflow-x-auto">
-            <table className="min-w-full text-sm text-gray-700 border rounded overflow-hidden">
-              <thead className="bg-gray-100 text-left font-semibold">
+          <div className="overflow-x-auto rounded-lg shadow">
+            <table className="min-w-full text-sm text-gray-700 bg-white">
+              <thead className="bg-gradient-to-r from-blue-100 to-blue-200 text-gray-800 uppercase tracking-wide text-xs font-semibold">
                 <tr>
-                  <th className="px-4 py-2">Date</th>
-                  <th className="px-4 py-2">Title</th>
-                  <th className="px-4 py-2">Score</th>
-                  <th className="px-4 py-2">Actions</th>
+                  <th className="px-5 py-3 text-left">Date</th>
+                  <th className="px-5 py-3 text-left">Title</th>
+                  <th className="px-5 py-3 text-left">Score</th>
+                  <th className="px-5 py-3 text-left">Action</th>
                 </tr>
               </thead>
               <tbody>
                 {testHistory.length ? testHistory.map((test, i) => (
-                  <tr key={i} className="border-t">
-                    <td className="px-4 py-2">{new Date(test.date).toLocaleDateString()}</td>
-                    <td className="px-4 py-2">{test.title}</td>
-                    <td className="px-4 py-2">{test.score}</td>
-                    <td className="px-4 py-2">
-                      <button className="text-blue-600 hover:underline">View Details</button>
+                  <tr key={i} className="border-t hover:bg-gray-50 transition">
+                    <td className="px-5 py-3">
+                      {new Date(test.date).toLocaleString(undefined, {
+                        dateStyle: "medium",
+                        timeStyle: "short",
+                      })}
+                    </td>
+                    <td className="px-5 py-3 font-medium">
+                      {test.title || 'Untitled Test'}
+                    </td>
+                    <td className="px-5 py-3">
+                      <span
+                        className={`px-3 py-1 rounded-full text-white text-xs font-semibold ${test.score >= 80
+                            ? 'bg-green-500'
+                            : test.score >= 50
+                              ? 'bg-yellow-500'
+                              : 'bg-red-500'
+                          }`}
+                      >
+                        {test.score} / {test.total}
+                      </span>
+                    </td>
+                    <td className="px-5 py-3">
+                      <button
+                        className="text-blue-600 hover:underline font-medium"
+                        onClick={() => navigate(`/score/${test.id}`)}
+                      >
+                        View Details
+                      </button>
                     </td>
                   </tr>
                 )) : (
                   <tr>
-                    <td colSpan="4" className="text-center text-gray-400 py-4">
+                    <td colSpan="4" className="text-center text-gray-400 py-6">
                       No test history available.
                     </td>
                   </tr>
@@ -246,6 +272,7 @@ const Profile = () => {
             </table>
           </div>
         </div>
+
       </div>
       <Footer />
     </div>

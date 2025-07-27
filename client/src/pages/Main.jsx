@@ -93,14 +93,14 @@ const Main = () => {
         <div className="flex-grow p-8 md:px-10">
           <div className="mb-6 text-center">
             <button
-              className={`px-4 py-2 rounded-l-lg ${mode === 'pdf' ? 'bg-orange-600 text-white' : 'bg-white text-orange-600'
+              className={`hover:cursor-pointer px-4 py-2 rounded-l-lg ${mode === 'pdf' ? 'bg-orange-600 text-white' : 'bg-white text-orange-600'
                 } border border-orange-400`}
               onClick={() => setMode('pdf')}
             >
               Generate from PDF
             </button>
             <button
-              className={`px-4 py-2 rounded-r-lg ${mode === 'role' ? 'bg-orange-600 text-white' : 'bg-white text-orange-600'
+              className={`hover:cursor-pointer px-4 py-2 rounded-r-lg ${mode === 'role' ? 'bg-orange-600 text-white' : 'bg-white text-orange-600'
                 } border border-orange-400`}
               onClick={() => setMode('role')}
             >

@@ -7,6 +7,7 @@ import Main from './pages/Main'
 import Test from './pages/Test'
 import Score from './pages/Score';
 import Profile from './pages/Profile'
+import ScorewithId from './pages/Scorewithid'
 
 const App = () => {
   return (
@@ -20,6 +21,7 @@ const App = () => {
           <Route path='/main' element = {<Main />}></Route>
           <Route path='/test' element = {<Test />}></Route>
           <Route path='/score' element = {<Score />}></Route>
+          <Route path='/score/:testId' element = {<ScorewithId />}></Route>
           <Route path='/profile' element = {<Profile />}></Route>
         </Routes>
       </Router>
