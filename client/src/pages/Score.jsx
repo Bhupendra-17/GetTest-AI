@@ -1,20 +1,19 @@
 import { useLocation } from 'react-router-dom';
 import Navbar from '../components/Navbar';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from 'recharts';
+import { PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+const COLORS = ['#4ade80', '#f87171']; // Green for correct, Red for incorrect
 import Footer from '../components/Footer';
 const Score = () => {
   const location = useLocation();
   const { questions, answers, timeTaken } = location.state || {};
 
   const correctAnswers = questions.filter((q, idx) => {
-    const correctAnswerText =
-      typeof q.answer === 'number'
-        ? q.options[q.answer].toString().trim()
-        : (q.answer || q.options[0]).toString().trim();
-    const selectedAnswer = (answers[idx] || "").toString().trim();
-    return correctAnswerText === selectedAnswer; 
+    const selected = (answers[idx] || "").toString().trim();
+    const selectedLetter = selected.slice(0, 1); // Extract "A" from "A) ..."
+    return selectedLetter === q.answer;
   }).length;
 
+  console.log(questions, answers);
   const data = [
     { name: 'Correct', value: correctAnswers },
     { name: 'Incorrect', value: questions.length - correctAnswers },
@@ -26,15 +25,35 @@ const Score = () => {
       <div className="max-w-4xl mx-auto bg-white shadow-lg p-6 rounded-xl">
         <h2 className="text-2xl font-bold text-center mb-4">Your Scorecard</h2>
         <div className="flex justify-center mb-6">
-          <BarChart width={300} height={200} data={data}>
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="name" />
-            <YAxis />
-            <Tooltip />
-            <Legend />
-            <Bar dataKey="value" fill="#8884d8" />
-          </BarChart>
+          <div className="bg-white rounded-xl shadow-md p-4 w-full max-w-md">
+            <h3 className="text-lg font-semibold text-center mb-4">Performance Overview</h3>
+            <ResponsiveContainer width="100%" height={250}>
+              <PieChart>
+                <Pie
+                  data={data}
+                  dataKey="value"
+                  nameKey="name"
+                  cx="50%"
+                  cy="50%"
+                  outerRadius={80}
+                  label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                >
+                  {data.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                  ))}
+                </Pie>
+                <Tooltip />
+                <Legend
+                  verticalAlign="bottom"
+                  iconType="circle"
+                  align="center"
+                  layout="horizontal"
+                />
+              </PieChart>
+            </ResponsiveContainer>
+          </div>
         </div>
+
 
         <div className="flex justify-between gap-4">
           <div className="flex justify-between items-center w-full bg-blue-50 border border-blue-200 rounded-lg px-4 py-2 shadow-sm">
@@ -56,12 +75,12 @@ const Score = () => {
                 <strong>Q{idx + 1}:</strong> {q.text}
               </p>
               {q.options.map((opt, i) => {
-                const correctAnswer = (q.answer || q.options[0]).toString().trim();
-                const selectedAnswer = (answers[idx] || "").toString().trim();
-                const optionText = opt.toString().trim();
+                const selected = (answers[idx] || "").toString().trim();
+                const selectedLetter = selected.slice(0, 1);
+                const currentOptionLetter = opt.trim().slice(0, 1);
 
-                const isCorrect = optionText === correctAnswer;
-                const isSelected = optionText === selectedAnswer;
+                const isCorrect = currentOptionLetter === q.answer;
+                const isSelected = selectedLetter === currentOptionLetter;
 
                 return (
                   <p
@@ -77,8 +96,9 @@ const Score = () => {
                   </p>
                 );
               })}
+
               <p className="mt-2 text-sm text-gray-600">
-                Correct Answer: <strong>{q.answer || q.options[0]}</strong>
+                Correct Answer: <strong>{q.answer}</strong>
               </p>
             </div>
           ))}

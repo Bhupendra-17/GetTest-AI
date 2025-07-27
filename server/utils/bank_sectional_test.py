@@ -6,9 +6,9 @@ load_dotenv()
 
 OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY")
 
-async def generate_questions(content: str, num_questions: int):
+async def generate_sectional(for_role:str, subject: str, num_questions: int):
     prompt = f"""
-    Generate {num_questions} medium-hard level multiple-choice questions from the text that have subject necessary information and should be useful for the candidate exams. Each question must have 4 options (A–D) and an answer in this format:
+    Generate {num_questions} medium-hard level multiple-choice questions from the text that have questions which are asked in previous years of {for_role}. Questions should be related for the candidates. Each question must have 4 options (A–D) and an answer in this format:
 
     Question?
     A) ...
@@ -17,8 +17,12 @@ async def generate_questions(content: str, num_questions: int):
     D) ...
     Answer: A
 
-    Content:
-    {content}
+    For Role of:
+    {for_role}
+    Subject:
+    {subject}
+
+    Having explaination for each of the answers in two lines but clear.
     """
 
     headers = {

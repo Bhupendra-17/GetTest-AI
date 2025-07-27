@@ -1,7 +1,9 @@
 from fastapi import APIRouter, UploadFile, File, Form, HTTPException, Depends, Request
 from utils.pdf_processor import extract_text_from_pdf
 from utils.ai_generator import generate_questions
+from utils.bank_sectional_test import generate_sectional
 from models.test import TestResult
+from pydantic import BaseModel
 from bson import ObjectId
 import os
 import uuid
@@ -11,6 +13,12 @@ router = APIRouter()
 UPLOAD_DIR = "uploads"
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 
+class SectionalRequest(BaseModel):
+    role: str
+    subject: str
+    num_questions: int
+
+# USING PDF CREATE TEST
 @router.post("/generate-test/")
 async def generate_test(file: UploadFile = File(...), num_questions: int = Form(...)):
     try:
@@ -79,7 +87,41 @@ async def upload_and_read_pdf(file: UploadFile = File(...)):
     
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error reading PDF: {str(e)}")
-    
+
+
+# WITHOUT HAVING ANY PDF CREATE MOCK TEST
+
+@router.post("/generate_sectional/")
+async def generate_test(data: SectionalRequest):
+    try:
+        response_text = await generate_sectional(
+            data.role, data.subject, data.num_questions
+        )
+        # Parse the generated text into structured questions
+        questions = []
+        current = {}
+        for line in response_text.strip().split("\n"):
+            line = line.strip()
+            if line and line[0].isdigit() and "." in line:
+                if current:
+                    questions.append(current)
+                    current = {}
+                current["text"] = line
+                current["options"] = []
+            elif line.startswith(("A)", "B)", "C)", "D)")):
+                current.setdefault("options", []).append(line)
+            elif line.lower().startswith("answer:"):
+                current["answer"] = line.split(":")[1].strip()
+
+        if current:
+            questions.append(current)
+
+        return {"questions": questions}
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 # Save test result
 @router.post("/save-result/")
 async def save_test_result(data: TestResult, request: Request):
