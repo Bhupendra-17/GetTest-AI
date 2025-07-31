@@ -10,11 +10,11 @@ const Register = () => {
   const [message, setMessage] = useState('');
   const [gender, setGender] = useState('');
   const [profilePic, setProfilePic] = useState('https://cdn-icons-png.flaticon.com/512/236/236831.png');
-
+  const backendUrl = import.meta.env.VITE_BACKEND_URL;
   const handleSignup = async (e) => {
     e.preventDefault();
     try {
-      const response = await axios.post('http://localhost:8000/register', {
+      const response = await axios.post(`${backendUrl}/register`, {
         name,
         email,
         password,

@@ -8,12 +8,13 @@ const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const backendUrl = import.meta.env.VITE_BACKEND_URL;
 
   const handleLogin = async (e) => {
     e.preventDefault(); // Prevent form reload
 
     try {
-      const response = await axios.post('http://localhost:8000/login', {
+      const response = await axios.post(`${backendUrl}/login`, {
         email,
         password,
       });

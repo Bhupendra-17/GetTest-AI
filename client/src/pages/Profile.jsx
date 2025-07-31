@@ -17,6 +17,7 @@ const Profile = () => {
   const [bestScore, setBestScore] = useState(null);
   const [averageScore, setAverageScore] = useState(null);
   const [message, setMessage] = useState(null); // Optional error handling
+  const backendUrl = import.meta.env.VITE_BACKEND_URL;
 
   useEffect(() => {
     fetchUserProfile();
@@ -36,7 +37,7 @@ const Profile = () => {
     if (!userId) return;
 
     try {
-      const { data } = await axios.get(`http://localhost:8000/user/${userId}`);
+      const { data } = await axios.get(`${backendUrl}/user/${userId}`);
       setFormData({
         name: data.name,
         email: data.email,
@@ -53,7 +54,7 @@ const Profile = () => {
     if (!userId) return;
 
     try {
-      const { data } = await axios.get(`http://localhost:8000/history/${userId}`);
+      const { data } = await axios.get(`${backendUrl}/history/${userId}`);
       setTestHistory(data.tests || []);
       calculateScores(data.tests || []);
     } catch (err) {
@@ -76,7 +77,7 @@ const Profile = () => {
     const profilePic = getProfilePicByGender(formData.gender);
 
     try {
-      await axios.put(`http://localhost:8000/user/${userId}`, {
+      await axios.put(`${backendUrl}/user/${userId}`, {
         name: formData.name,
         gender: formData.gender,
         profilePic

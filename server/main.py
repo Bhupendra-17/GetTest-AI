@@ -11,6 +11,8 @@ load_dotenv()
 
 app = FastAPI()
 
+APP_URL = os.getenv("APP_URL")
+FRONTEND_URL = os.getenv("FRONTEND_URL")
 # MongoDB Setup
 MONGO_DETAILS = os.getenv("MONGO_URI")
 client = motor.motor_asyncio.AsyncIOMotorClient(MONGO_DETAILS)
@@ -20,7 +22,7 @@ app.database = database  # Attach to app so it can be accessed via request.app.d
 # CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173"],  # Vite frontend origin
+    allow_origins=["http://localhost:5173", FRONTEND_URL],  # Vite frontend origin
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

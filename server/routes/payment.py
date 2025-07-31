@@ -15,6 +15,7 @@ SUPABASE_URL = os.getenv("SUPABASE_URL")
 SUPABASE_KEY = os.getenv("SUPABASE_KEY")
 CASHFREE_APP_ID = os.getenv("CASHFREE_APP_ID")
 CASHFREE_SECRET = os.getenv("CASHFREE_SECRET")
+FRONTEND_URL = os.getenv("FRONTEND_URL")
 
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
@@ -76,8 +77,8 @@ async def create_payment(payload: PaymentRequest, request: Request):
         "order_currency": "INR",
         "order_note": f"Subscription for {payload.plan_id} plan",
         "order_meta": {
-            "return_url": f"http://localhost:5173/payment-success?order_id={order_id}",
-            "cancel_url": f"http://localhost:5173/payment-failure"
+            "return_url": f"{FRONTEND_URL}/payment-success?order_id={order_id}",
+            "cancel_url": f"{FRONTEND_URL}/payment-failure"
         }
     }
 
@@ -95,7 +96,7 @@ async def create_payment(payload: PaymentRequest, request: Request):
 
         payment_data = res.json()
 
-    supabase.table("transactions").insert({
+    await supabase.table("transactions").insert({
         "email": email,
         "user_id": user_id,
         "plan_id": payload.plan_id,

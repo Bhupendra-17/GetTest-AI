@@ -10,10 +10,11 @@ const COLORS = ['#10b981', '#ef4444', '#9ca3af']; // Green, Red, Gray
 const ScorewithId = () => {
   const { testId } = useParams();
   const [testData, setTestData] = useState(null);
+  const backendUrl = import.meta.env.VITE_BACKEND_URL;
 
   useEffect(() => {
     if (!testId) return;
-    axios.get(`http://localhost:8000/test/${testId}`)
+    axios.get(`${backendUrl}/test/${testId}`)
       .then((res) => setTestData(res.data))
       .catch((err) => console.error("Error fetching test data:", err));
   }, [testId]);

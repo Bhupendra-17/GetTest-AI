@@ -47,7 +47,13 @@ const Sidebar = () => {
             <Link to='/'>Home</Link>
           </li>
           <li className="py-1.5 -ml-2 px-2 w-full hover:text-gray-900 hover:font-semibold">
+            <Link to='/profile'>Profile</Link>
+          </li>
+          <li className="py-1.5 -ml-2 px-2 w-full hover:text-gray-900 hover:font-semibold">
             <Link to='/main'>Get Started</Link>
+          </li>
+          <li className="py-1.5 -ml-2 px-2 w-full hover:text-gray-900 hover:font-semibold">
+            <Link to='/pricing'>Pricing</Link>
           </li>
           <li className="py-1.5 -ml-2 px-2 w-full hover:text-gray-900 hover:font-semibold">
             <Link to='/'>About</Link>

@@ -6,6 +6,7 @@ const PaymentSuccess = () => {
   const [status, setStatus] = useState('⏳ Verifying your payment...');
   const location = useLocation();
   const navigate = useNavigate();
+  const backendUrl = import.meta.env.VITE_BACKEND_URL;
 
   useEffect(() => {
     const verifyPayment = async () => {
@@ -19,7 +20,7 @@ const PaymentSuccess = () => {
       }
 
       try {
-        const res = await fetch(`http://localhost:8000/verify-payment?order_id=${orderId}`, {
+        const res = await fetch(`${backendUrl}/verify-payment?order_id=${orderId}`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },

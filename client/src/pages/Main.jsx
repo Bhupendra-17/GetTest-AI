@@ -10,6 +10,7 @@ const Main = () => {
   const [role, setRole] = useState('');
   const [subject, setSubject] = useState('');
   const [mode, setMode] = useState('pdf'); // 'pdf' or 'role'
+  const backendUrl = import.meta.env.VITE_BACKEND_URL;
   const navigate = useNavigate();
 
   const handleFileUpload = (e) => {
@@ -24,7 +25,7 @@ const Main = () => {
 
     setLoading(true);
     try {
-      const response = await fetch('http://localhost:8000/generate_sectional/', {
+      const response = await fetch(`${backendUrl}/generate_sectional/`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ role, subject, num_questions: parseInt(numQuestions) }),
@@ -60,7 +61,7 @@ const Main = () => {
     formData.append('subject', subject);
 
     try {
-      const response = await fetch('http://localhost:8000/generate-test/', {
+      const response = await fetch(`${backendUrl}/generate-test/`, {
         method: 'POST',
         body: formData,
       });

@@ -11,7 +11,8 @@ const Score = () => {
   const location = useLocation();
   const { questions = [], answers = [], timeTaken = 0 } = location.state || {};
   const userId = localStorage.getItem("userId");
-
+  const backendUrl = import.meta.env.VITE_BACKEND_URL;
+  
   const correctAnswers = questions.filter((q, idx) => {
     const selected = (answers[idx] || "").toString().trim();
     const selectedLetter = selected.slice(0, 1);
@@ -50,7 +51,7 @@ const Score = () => {
       questions: formattedQuestions
     };
 
-    axios.post("http://localhost:8000/submit-test", payload)
+    axios.post(`${backendUrl}/submit-test`, payload)
       .then(res => console.log("Saved:", res.data))
       .catch(err => console.error("Error saving result:", err));
   }, [questions, answers, timeTaken, userId, correctAnswers]);

@@ -27,6 +27,7 @@ const plans = [
 const PaymentPlans = () => {
     const [selectedPlan, setSelectedPlan] = useState(null);
     const [showConfirm, setShowConfirm] = useState(false);
+    const backendUrl = import.meta.env.VITE_BACKEND_URL;
 
     const handleSelect = (plan) => {
         setSelectedPlan(plan);
@@ -40,7 +41,7 @@ const PaymentPlans = () => {
 
         const token = localStorage.getItem("token");
 
-        const res = await fetch("http://localhost:8000/create-payment", {
+        const res = await fetch(`${backendUrl}/create-payment`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
