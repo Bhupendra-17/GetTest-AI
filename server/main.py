@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-from routes import test, auth, users
+from routes import test, auth, users,payment
 import motor.motor_asyncio
 import os
 from dotenv import load_dotenv
@@ -30,6 +30,8 @@ app.add_middleware(
 app.include_router(test.router)
 app.include_router(auth.router)
 app.include_router(users.router)
+app.include_router(payment.router)
+
 # Register middleware
 app.add_middleware(LimitUploadSizeMiddleware)
 

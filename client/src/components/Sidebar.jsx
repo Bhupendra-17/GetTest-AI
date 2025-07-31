@@ -32,13 +32,13 @@ const Sidebar = () => {
       {/* Sidebar */}
       <div
         ref={sidebarRef} // Attach the ref to the sidebar div
-        className={`fixed top-0 left-0 z-10 h-full w-64 backdrop-blur-sm bg-neutral-500/30 py-4 pl-4 transform ${
+        className={`fixed top-0 left-0 z-10 h-full w-64 backdrop-blur-sm bg-slate-100/30 py-6 pl-4 transform ${
           isOpen ? 'translate-x-0' : '-translate-x-full'
         } transition-transform duration-300 ease-in-out`}
       >
         <button
           onClick={toggleSidebar}
-          className="p-3 mb-2 text-2xl  rounded-full hover:bg-sky-500 hover:cursor-pointer transition"
+          className="p-3 mb-2 text-2xl  rounded-full hover:bg-gray-500 hover:cursor-pointer transition"
         >
           <i className="fa-solid fa-bars"></i>
         </button>
@@ -59,7 +59,7 @@ const Sidebar = () => {
       <div className="flex ">
         <button
           onClick={toggleSidebar}
-          className="m-4 p-3 text-2xl rounded-full hover:bg-sky-500 hover:cursor-pointer transition"
+          className="m-4 p-3 text-2xl rounded-full hover:bg-gray-500 hover:cursor-pointer transition"
         >
           <i className="fa-solid fa-bars"></i>
         </button>

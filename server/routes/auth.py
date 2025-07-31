@@ -25,7 +25,7 @@ async def register_user(user: User, request: Request):
     # ✅ Get the inserted _id
     user_id = str(result.inserted_id)
 
-    token = create_access_token({"sub": user.email})
+    token = create_access_token({"sub": user.email,"user_id": user_id })
 
     return {
         "access_token": token,
@@ -46,7 +46,7 @@ async def login_user(user: UserLogin, request: Request):
     if not db_user or not pwd_context.verify(user.password, db_user["password"]):
         raise HTTPException(status_code=401, detail="Invalid credentials")
 
-    token = create_access_token({"sub": user.email})
+    token = create_access_token({"sub": user.email, "user_id": str(db_user["_id"])})
 
     # ✅ Include the _id in the response
     return {
