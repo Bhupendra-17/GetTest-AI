@@ -1,13 +1,23 @@
-from fastapi import APIRouter, UploadFile, File, Form, HTTPException, Request
-from utils.pdf_processor import extract_text_from_pdf
-from utils.ai_generator import generate_questions
-from utils.bank_sectional_test import generate_sectional
-from models.test import TestResult
+from fastapi import APIRouter, UploadFile, File, Form, Depends, HTTPException, Request
 from pydantic import BaseModel
 from datetime import datetime
 from bson import ObjectId
 import os
 import uuid
+
+# Utils
+from utils.pdf_processor import extract_text_from_pdf
+from utils.ai_generator import generate_questions
+from utils.bank_sectional_test import generate_sectional
+from utils.test_tracker import can_take_test, get_start_of_week
+
+# Models and Database
+from models.test import TestResult
+from config import db  # ✅ import your connected DB
+test_usage_collection = db.test_usages
+
+# Auth
+from utils.jwt_handler import decode_token
 
 router = APIRouter()
 
@@ -39,16 +49,40 @@ def parse_questions(text: str):
         questions.append(current)
     return questions
 
-# 1. Generate test from uploaded PDF
+#1. Generate test
 @router.post("/generate-test/")
-async def generate_test(file: UploadFile = File(...), num_questions: int = Form(...)):
+async def generate_test(
+    request: Request,
+    file: UploadFile = File(...),
+    num_questions: int = Form(...)
+):
     try:
+        # Step 1: Authenticate user via JWT
+        auth_header = request.headers.get("Authorization")
+        if not auth_header:
+            raise HTTPException(status_code=401, detail="Authorization header missing.")
+        
+        token = auth_header.replace("Bearer ", "")
+        try:
+            user = decode_token(token)
+            user_id = user["user_id"]
+        except Exception:
+            raise HTTPException(status_code=401, detail="Invalid token.")
+
+        # Step 2: Enforce free trial limit
+        allowed, count = can_take_test(user_id, test_usage_collection)
+        if not allowed:
+            raise HTTPException(
+                status_code=403,
+                detail="Free trial limit (4 tests/week) reached. Please upgrade your plan."
+            )
+
+        # Step 3: Proceed with PDF check
         if not file.filename.lower().endswith(".pdf"):
             raise HTTPException(status_code=400, detail="Only PDF files are supported.")
-        
+
         file_id = str(uuid.uuid4())
         file_path = os.path.join(UPLOAD_DIR, f"{file_id}.pdf")
-
         with open(file_path, "wb") as f:
             f.write(await file.read())
 
@@ -58,10 +92,24 @@ async def generate_test(file: UploadFile = File(...), num_questions: int = Form(
         if not content.strip():
             raise HTTPException(status_code=400, detail="No readable text found in the PDF.")
 
+        # Step 4: Generate questions
         response_text = await generate_questions(content, num_questions)
         questions = parse_questions(response_text)
 
-        return {"questions": questions}
+        # Step 5: Update user's test usage
+        test_usage_collection.update_one(
+            {"user_id": user_id},
+            {"$inc": {"tests_this_week": 1}}
+        )
+
+        return {
+            "questions": questions,
+            "free_tests_used": count + 1,
+            "free_tests_remaining": max(0, 4 - (count + 1))
+        }
+
+    except HTTPException as http_exc:
+        raise http_exc
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 

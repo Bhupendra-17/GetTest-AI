@@ -16,7 +16,7 @@ SUPABASE_KEY = os.getenv("SUPABASE_KEY")
 CASHFREE_APP_ID = os.getenv("CASHFREE_APP_ID")
 CASHFREE_SECRET = os.getenv("CASHFREE_SECRET")
 FRONTEND_URL = os.getenv("FRONTEND_URL")
-
+CASHFREE_BASE_URL = os.getenv("CASHFREE_BASE_URL")
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
 PLAN_DAYS = {
@@ -25,7 +25,7 @@ PLAN_DAYS = {
     "bimonthly": 60
 }
 
-CASHFREE_BASE_URL = "https://sandbox.cashfree.com/pg"
+CASHFREE_BASE_URL = "https://sandbox.cashfree.com/"
 
 class PaymentRequest(BaseModel):
     plan_id: str  # weekly, monthly, bimonthly
@@ -131,7 +131,7 @@ async def cashfree_webhook(payload: WebhookPayload):
     return {"success": True}
 
 
-# Optional route to check subscription status
+    # Optional route to check subscription status
 @router.get("/me/subscription")
 async def get_subscription(request: Request):
     auth_header = request.headers.get("Authorization")

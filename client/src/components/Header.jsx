@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import Logo from '../assets/logo1.png';
+import { useEffect, useState } from 'react';
+import Logo from '/logo.png';
 import Button from './Button';
 import { Link, useNavigate } from 'react-router-dom';
 import { FiLogOut } from 'react-icons/fi';

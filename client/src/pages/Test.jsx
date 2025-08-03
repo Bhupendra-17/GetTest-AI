@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { checkTestEligibility } from "../utils/testEligibility";
+import { toast } from "react-toastify";
 
 const Test = () => {
   const location = useLocation();
@@ -11,11 +13,43 @@ const Test = () => {
   const [markedForReview, setMarkedForReview] = useState({});
   const [timeLeft, setTimeLeft] = useState(60 * 60); // 1 hour
   const [questionTimers, setQuestionTimers] = useState(() => questions.map(() => 0));
+  const [allowed, setAllowed] = useState(false); // Control rendering
 
   const currentQuestion = questions[currentIndex];
 
-  // Total test timer and current question timer update
+  // Check free trial eligibility on load
   useEffect(() => {
+    const checkAccess = async () => {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        toast.error("Please login to start a test.");
+        navigate("/login");
+        return;
+      }
+
+      try {
+        const { allowed, remaining_tests, reason } = await checkTestEligibility(token);
+
+        if (allowed) {
+          toast.success(`You have ${remaining_tests} free tests left this week.`);
+          setAllowed(true);
+        } else {
+          toast.warning(reason || "You have reached your weekly free test limit.");
+          navigate("/pricing");
+        }
+      } catch (err) {
+        toast.error(err.message || "An error occurred.");
+        navigate("/dashboard");
+      }
+    };
+
+    checkAccess();
+  }, [navigate]);
+
+  // Start total test timer and question timer
+  useEffect(() => {
+    if (!allowed) return;
+
     const intervalId = setInterval(() => {
       setTimeLeft(prev => {
         if (prev <= 1) {
@@ -34,7 +68,7 @@ const Test = () => {
     }, 1000);
 
     return () => clearInterval(intervalId);
-  }, [currentIndex]);
+  }, [currentIndex, allowed]);
 
   const handleOptionSelect = (index, option) => {
     setAnswers({ ...answers, [index]: option });
@@ -56,7 +90,7 @@ const Test = () => {
         questions,
         answers,
         timeTaken: 3600 - timeLeft,
-        questionTimers, // individual question time taken
+        questionTimers,
       },
     });
   };
@@ -100,6 +134,8 @@ const Test = () => {
 
   const { answered, notAnswered, marked, total } = getStatusCount();
 
+  if (!allowed) return null; // Don't render test UI if not allowed
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-100 to-purple-100 flex flex-col">
       {/* Header */}
@@ -137,8 +173,8 @@ const Test = () => {
                 <button
                   key={idx}
                   className={`block w-full text-left px-4 py-2 rounded-lg border transition ${answers[currentIndex] === option
-                      ? 'bg-blue-500 text-white border-blue-500'
-                      : 'bg-gray-100 hover:bg-gray-200'
+                    ? 'bg-blue-500 text-white border-blue-500'
+                    : 'bg-gray-100 hover:bg-gray-200'
                     }`}
                   onClick={() => handleOptionSelect(currentIndex, option)}
                 >
@@ -146,9 +182,8 @@ const Test = () => {
                 </button>
               ))}
             </div>
-            <div className='flex justify-between items-center'>
 
-              {/* Clear Selection Button */}
+            <div className='flex justify-between items-center'>
               <button
                 onClick={handleClearSelection}
                 className="mt-4 bg-red-100 text-red-600 px-4 py-1 rounded hover:bg-red-200"
@@ -161,7 +196,7 @@ const Test = () => {
                   type="checkbox"
                   checked={markedForReview[currentIndex]}
                   onChange={() => handleMarkForReview(currentIndex)}
-                ></input>
+                />
                 <span className="text-lg">Mark for Review</span>
               </div>
             </div>
@@ -181,7 +216,6 @@ const Test = () => {
                 {currentIndex === questions.length - 1 ? 'Finish' : 'Next'}
               </button>
             </div>
-
           </div>
         </div>
 
@@ -195,10 +229,10 @@ const Test = () => {
                   key={index}
                   onClick={() => setCurrentIndex(index)}
                   className={`rounded-full px-3 py-2 text-sm transition ${answers[index]
-                      ? 'bg-green-500 text-white'
-                      : markedForReview[index]
-                        ? 'bg-yellow-500 text-white'
-                        : 'bg-gray-300 text-gray-800'
+                    ? 'bg-green-500 text-white'
+                    : markedForReview[index]
+                      ? 'bg-yellow-500 text-white'
+                      : 'bg-gray-300 text-gray-800'
                     } ${currentIndex === index ? 'ring-2 ring-orange-400' : ''}`}
                 >
                   {index + 1}

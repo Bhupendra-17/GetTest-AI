@@ -84,10 +84,10 @@ const Main = () => {
   };
 
   return (
-    <div className="relative min-h-screen flex flex-col">
-      <div className="absolute inset-0 bg-[linear-gradient(60deg,_rgb(247,_149,_51),_rgb(243,_112,_85),_rgb(239,_78,_123),_rgb(161,_102,_171),_rgb(80,_115,_184),_rgb(16,_152,_173),_rgb(7,_179,_155),_rgb(111,_186,_130))] z-0" />
-      <div className="relative z-10 text-white">
-        <div className="flex">
+    <div className="relative min-h-screen w-full flex flex-col">
+      <div className="absolute inset-0 -z-10 h-full w-full bg-[linear-gradient(60deg,_rgb(247,_149,_51),_rgb(243,_112,_85),_rgb(239,_78,_123),_rgb(161,_102,_171),_rgb(80,_115,_184),_rgb(16,_152,_173),_rgb(7,_179,_155),_rgb(111,_186,_130))]" />
+      <div className="relative z-10 text-white flex flex-col min-h-screen">
+        <div className="w-full">
           <Navbar />
         </div>
 
@@ -108,7 +108,7 @@ const Main = () => {
               Generate from Role & Subject
             </button>
           </div>
-          
+
           <div className="bg-gradient-to-l from-cyan-300 to-red-200 shadow-2xl rounded-3xl p-10 max-w-7xl mx-auto backdrop-blur-sm bg-opacity-80">
             <h2 className="text-4xl font-bold text-center text-gray-800 mb-8">Create Your Test in 3 Simple Steps</h2>
 
@@ -154,15 +154,15 @@ const Main = () => {
                 </div>
               </div>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                {/* Role & Subject Selection */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                {/* Select Role */}
                 <div className="flex flex-col items-center text-center p-6 border border-orange-400 rounded-2xl shadow-lg bg-white/35 transition hover:shadow-2xl">
                   <FiBriefcase size={50} className="text-orange-500 mb-4" />
-                  <h3 className="text-xl font-bold text-orange-600 mb-2">Select Role</h3>
+                  <h3 className="text-lg font-semibold text-orange-600 mb-2">Select Role</h3>
                   <select
                     value={role}
                     onChange={(e) => setRole(e.target.value)}
-                    className="border p-2 rounded-lg text-black w-3/4 focus:outline-none focus:ring-2 focus:ring-orange-400 shadow-sm mb-4"
+                    className="border p-2 rounded-lg text-black w-full focus:outline-none focus:ring-2 focus:ring-orange-400 shadow-sm"
                   >
                     <option value="">-- Choose Role --</option>
                     <option value="Bank Clerk">Bank Clerk</option>
@@ -170,13 +170,16 @@ const Main = () => {
                     <option value="UPSC">UPSC</option>
                     <option value="SSC CGL">SSC CGL</option>
                   </select>
+                </div>
 
-                  <FiBookOpen size={40} className="text-orange-500 mb-4 mt-2" />
-                  <h3 className="text-xl font-bold text-orange-600 mb-2">Select Subject</h3>
+                {/* Select Subject */}
+                <div className="flex flex-col items-center text-center p-6 border border-orange-400 rounded-2xl shadow-lg bg-white/35 transition hover:shadow-2xl">
+                  <FiBookOpen size={50} className="text-orange-500 mb-4" />
+                  <h3 className="text-lg font-semibold text-orange-600 mb-2">Select Subject</h3>
                   <select
                     value={subject}
                     onChange={(e) => setSubject(e.target.value)}
-                    className="border p-2 rounded-lg text-black w-3/4 focus:outline-none focus:ring-2 focus:ring-orange-400 shadow-sm"
+                    className="border p-2 rounded-lg text-black w-full focus:outline-none focus:ring-2 focus:ring-orange-400 shadow-sm"
                   >
                     <option value="">-- Choose Subject --</option>
                     <option value="Logical Reasoning">Logical Reasoning</option>
@@ -186,30 +189,29 @@ const Main = () => {
                   </select>
                 </div>
 
-                {/* Question Count */}
+                {/* Set Question Count */}
                 <div className="flex flex-col items-center text-center p-6 border border-orange-400 rounded-2xl shadow-lg bg-white/35 transition hover:shadow-2xl">
                   <FiSettings size={50} className="text-orange-500 mb-4" />
-                  <h3 className="text-xl font-bold text-orange-600 mb-2">Set Question Count</h3>
+                  <h3 className="text-lg font-semibold text-orange-600 mb-2">Question Count</h3>
                   <input
                     type="number"
-                    placeholder="Number of Questions"
+                    placeholder="Enter number"
                     value={numQuestions}
                     onChange={(e) => setNumQuestions(e.target.value)}
-                    className="border p-2 rounded-lg text-center text-black w-3/4 focus:outline-none focus:ring-2 focus:ring-orange-400 shadow-sm"
+                    className="border p-2 rounded-lg text-black w-full text-center focus:outline-none focus:ring-2 focus:ring-orange-400 shadow-sm"
                   />
                 </div>
 
                 {/* Generate Button */}
-                <div className="flex flex-col items-center text-center p-6 border border-orange-400 rounded-2xl shadow-lg bg-white/35 transition hover:shadow-2xl">
+                <div className="flex flex-col justify-center items-center text-center p-6 border border-orange-400 rounded-2xl shadow-lg bg-white/35 transition hover:shadow-2xl">
                   <FiCheckCircle size={50} className="text-orange-500 mb-4" />
-                  <h3 className="text-xl font-bold text-orange-600 mb-2">Generate Test</h3>
-                  <p className="text-gray-600 mb-4 text-sm">Click to generate based on role and subject</p>
+                  <h3 className="text-lg font-semibold text-orange-600 mb-2">Generate</h3>
                   <button
                     onClick={handleGenerateFromRole}
                     disabled={loading}
-                    className="bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white py-2 px-6 rounded-xl shadow-lg transition-all duration-300"
+                    className="bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white py-2 px-6 rounded-xl shadow-lg transition-all duration-300 w-full"
                   >
-                    {loading ? 'Generating...' : 'Generate Sectional Test'}
+                    {loading ? 'Generating...' : 'Generate Test'}
                   </button>
                 </div>
               </div>
