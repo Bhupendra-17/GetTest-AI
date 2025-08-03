@@ -54,47 +54,48 @@ async def create_payment(payload: PaymentRequest, request: Request):
     # Get Cashfree access token
     async with httpx.AsyncClient() as client:
         auth_res = await client.post(
-            f"{CASHFREE_BASE_URL}/oauth/token",
-            data={
-                "grant_type": "client_credentials",
+            f"{CASHFREE_BASE_URL}/v1/auth/tokens",
+            json={
                 "client_id": CASHFREE_APP_ID,
                 "client_secret": CASHFREE_SECRET
             },
-            headers={"Content-Type": "application/x-www-form-urlencoded"}
+            headers={"Content-Type": "application/json"}
         )
         if auth_res.status_code != 200:
             raise HTTPException(status_code=500, detail="Failed to authenticate with Cashfree")
-        auth_token = auth_res.json()["access_token"]
+        auth_token = auth_res.json()["data"]["token"]
 
     payment_payload = {
+        "order_id": order_id,
+        "order_amount": payload.amount,
+        "order_currency": "INR",
         "customer_details": {
             "customer_id": email,
             "customer_email": email,
             "customer_phone": payload.phone or ""
         },
-        "order_id": order_id,
-        "order_amount": payload.amount,
-        "order_currency": "INR",
         "order_note": f"Subscription for {payload.plan_id} plan",
         "order_meta": {
             "return_url": f"{FRONTEND_URL}/payment-success?order_id={order_id}",
-            "cancel_url": f"{FRONTEND_URL}/payment-failure"
+            "notify_url": f"{FRONTEND_URL}/payment-webhook"
         }
     }
 
+# POST /v2/orders with Bearer token
     async with httpx.AsyncClient() as client:
         res = await client.post(
-            f"{CASHFREE_BASE_URL}/orders",
+            f"{CASHFREE_BASE_URL}/v2/orders",
             json=payment_payload,
             headers={
                 "Authorization": f"Bearer {auth_token}",
-                "Content-Type": "application/json"
+                "Content-Type": "application/json",
+                "x-api-version": "2022-09-01"  # recommend specifying version
             }
         )
-        if res.status_code != 200:
+        if res.status_code not in [200, 201]:
             raise HTTPException(status_code=500, detail="Payment creation failed")
-
         payment_data = res.json()
+        payment_link = payment_data["payment_session_id"]  # or res.json()["data"]["payment_link"]
 
     await supabase.table("transactions").insert({
         "email": email,
@@ -120,14 +121,16 @@ class WebhookPayload(BaseModel):
     payment_time: Optional[str] = None
 
 @router.post("/cashfree-webhook")
-async def cashfree_webhook(payload: WebhookPayload):
-    order_status = payload.order_status.upper()
-    is_success = order_status in ["PAID", "SUCCESS"]
+async def cashfree_webhook(request: Request):
+    payload = await request.json()
+    order_id = payload["order"]["order_id"]
+    order_status = payload["order"]["order_status"]
+    # ... validate signature here if needed ...
     supabase.table("transactions").update({
         "status": order_status,
-        "confirmation_time": payload.payment_time or datetime.utcnow().isoformat(),
-        "is_active": is_success
-    }).eq("order_id", payload.order_id).execute()
+        "confirmation_time": payload.get("payment_time", datetime.utcnow().isoformat()),
+        "is_active": order_status in ["PAID", "SUCCESS"]
+    }).eq("order_id", order_id).execute()
     return {"success": True}
 
 
