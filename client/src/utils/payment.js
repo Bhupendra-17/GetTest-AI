@@ -1,7 +1,9 @@
 export const initiatePayment = async (plan_id, amount, phone) => {
+  const backendUrl = import.meta.env.VITE_BACKEND_URL;
+
   const token = localStorage.getItem("token");
   try {
-    const res = await fetch("http://localhost:8000/create-payment", {
+    const res = await fetch(`${backendUrl}/create-payment`, {
       method: "POST",
       headers: {
         Authorization: `Bearer ${token}`,
