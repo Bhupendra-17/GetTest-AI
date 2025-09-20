@@ -8,23 +8,22 @@ OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY")
 
 async def generate_sectional(for_role:str, subject: str, num_questions: int):
     prompt = f"""
-    Generate {num_questions} medium-hard level multiple-choice questions from the text that have questions which are asked in previous years of {for_role}. Questions should be related for the candidates. Each question must have 4 options (A–D) and an answer in this format:
+    Generate {num_questions} medium-hard level multiple-choice questions from the text that have questions which are asked in previous years of {for_role}. Questions should be related for the candidates. Each question must have exactly four options (A, B, C, D) and an answer in this format:
 
-    Question?
-    A) ...
-    B) ...
-    C) ...
-    D) ...
-    Answer: A
+    1. [Question Text]
+    A) [Option A text]
+    B) [Option B text]
+    C) [Option C text]
+    D) [Option D text]
+    Answer: [Correct Letter, e.g., A]
 
     For Role of:
     {for_role}
     Subject:
     {subject}
 
-    Having explaination for each of the answers in two lines but clear.
+    Have an explanation for each of the answers in two lines but clear.
     """
-
     headers = {
         "Authorization": f"Bearer {OPENROUTER_API_KEY}",
         "Content-Type": "application/json"

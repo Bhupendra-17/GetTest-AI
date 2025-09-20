@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import Navbar from '../components/Navbar';
+import { supabase } from '../utils/supabaseClient';
 
 const Login = () => {
   const navigate = useNavigate();
@@ -11,7 +12,7 @@ const Login = () => {
   const backendUrl = import.meta.env.VITE_BACKEND_URL;
 
   const handleLogin = async (e) => {
-    e.preventDefault(); // Prevent form reload
+    e.preventDefault();
 
     try {
       const response = await axios.post(`${backendUrl}/login`, {
@@ -21,17 +22,22 @@ const Login = () => {
 
       const { access_token, user } = response.data;
 
-      // Save to localStorage
       localStorage.setItem('token', access_token);
       localStorage.setItem('user', JSON.stringify(user));
-      localStorage.setItem('userId', user._id); // Ensure `_id` exists in backend response
+      localStorage.setItem('userId', user._id);
 
-      navigate('/');
+      navigate('/main');
     } catch (err) {
       console.error(err);
       setError('Invalid credentials. Please try again.');
     }
   };
+
+  // 🔹 Google OAuth Login 
+  const loginWithGoogle = () => {
+    window.location.href = `${import.meta.env.VITE_BACKEND_URL}/auth/google/login`;
+  };
+
 
   return (
     <div className="min-h-screen bg-[linear-gradient(60deg,_rgb(247,_149,_51),_rgb(243,_112,_85),_rgb(239,_78,_123),_rgb(161,_102,_171),_rgb(80,_115,_184),_rgb(16,_152,_173),_rgb(7,_179,_155),_rgb(111,_186,_130))]  px-2">
@@ -44,12 +50,9 @@ const Login = () => {
 
           <form onSubmit={handleLogin}>
             <div className="mb-4">
-              <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="email">
-                Email ID
-              </label>
+              <label className="block text-gray-700 text-sm font-bold mb-2">Email ID</label>
               <input
                 className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700"
-                id="email"
                 type="email"
                 placeholder="abc@xyz.com"
                 value={email}
@@ -59,12 +62,9 @@ const Login = () => {
             </div>
 
             <div className="mb-4">
-              <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="password">
-                Password
-              </label>
+              <label className="block text-gray-700 text-sm font-bold mb-2">Password</label>
               <input
                 className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700"
-                id="password"
                 type="password"
                 placeholder="Password"
                 value={password}
@@ -85,6 +85,16 @@ const Login = () => {
               </Link>
             </div>
           </form>
+
+          {/* 🔹 Google Login Button */}
+          <div className="mt-6 text-center">
+            <button
+              onClick={loginWithGoogle}
+              className="w-full bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded-full"
+            >
+              Continue with Google
+            </button>
+          </div>
         </div>
       </div>
     </div>

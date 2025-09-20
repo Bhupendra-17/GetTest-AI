@@ -36,7 +36,7 @@ hover:bg-[linear-gradient(60deg,_#ffb4c1,_#d3c7f1,_#b7e6f9,_#9ef2e6)]
       {!user ? (
         <div className='flex gap-4 items-center'>
           <Link to='/login'><Button title='Login' /></Link>
-          <Link to='/register'><Button title='Sign Up' /></Link>
+          <Link to='/register'><Button title='Register' /></Link>
         </div>
       ) : (
         <div className='relative'>

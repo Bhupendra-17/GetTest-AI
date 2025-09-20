@@ -1,18 +1,22 @@
 import { useLocation } from 'react-router-dom';
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import axios from 'axios';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from 'recharts';
 
-const COLORS = ['#10b981', '#ef4444', '#9ca3af']; // Green, Red, Gray
+const COLORS = ['#10b981', '#ef4444', '#9ca3af'];
 
 const Score = () => {
   const location = useLocation();
   const { questions = [], answers = [], timeTaken = 0 } = location.state || {};
   const userId = localStorage.getItem("userId");
   const backendUrl = import.meta.env.VITE_BACKEND_URL;
-  
+
+  // This ref will persist across renders without causing a re-render.
+  // It acts as a flag to ensure the API call happens only once.
+  const hasSubmitted = useRef(false);
+
   const correctAnswers = questions.filter((q, idx) => {
     const selected = (answers[idx] || "").toString().trim();
     const selectedLetter = selected.slice(0, 1);
@@ -33,7 +37,14 @@ const Score = () => {
   ];
 
   useEffect(() => {
-    if (!questions.length || !userId) return;
+    // Check if the submission has already happened or if the required data is missing.
+    // This is the core logic that prevents the duplicate call.
+    if (hasSubmitted.current || !questions.length || !userId) {
+      return; 
+    }
+
+    // Set the ref's value to true. This blocks any future attempts.
+    hasSubmitted.current = true;
 
     const formattedQuestions = questions.map((q, idx) => ({
       text: q.text,
@@ -52,9 +63,17 @@ const Score = () => {
     };
 
     axios.post(`${backendUrl}/submit-test`, payload)
-      .then(res => console.log("Saved:", res.data))
-      .catch(err => console.error("Error saving result:", err));
-  }, [questions, answers, timeTaken, userId, correctAnswers]);
+      .then(res => {
+        console.log("Test result saved:", res.data);
+      })
+      .catch(err => {
+        console.error("Error saving result:", err);
+        // Reset the flag if the call fails, allowing a retry on the next render.
+        hasSubmitted.current = false;
+      });
+  
+  // The empty dependency array ensures this effect runs ONLY once on mount.
+  }, []);
 
   return (
     <div className="w-full bg-[linear-gradient(60deg,_rgb(247,_149,_51),_rgb(243,_112,_85),_rgb(239,_78,_123),_rgb(161,_102,_171),_rgb(80,_115,_184),_rgb(16,_152,_173),_rgb(7,_179,_155),_rgb(111,_186,_130))] z-0 min-h-screen">

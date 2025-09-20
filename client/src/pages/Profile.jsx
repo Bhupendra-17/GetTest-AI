@@ -33,11 +33,15 @@ const Profile = () => {
   };
 
   const fetchUserProfile = async () => {
-    const userId = localStorage.getItem("userId");
-    if (!userId) return;
+    const userId = localStorage.getItem("userId"); // for email/password login
+    const id = localStorage.getItem("id");         // for Google OAuth login
+
+    const finalId = id || userId;
+    if (!finalId) return;
 
     try {
-      const { data } = await axios.get(`${backendUrl}/user/${userId}`);
+      const { data } = await axios.get(`${backendUrl}/user/${finalId}`);
+
       setFormData({
         name: data.name,
         email: data.email,
@@ -51,10 +55,12 @@ const Profile = () => {
 
   const fetchTestHistory = async () => {
     const userId = localStorage.getItem("userId");
-    if (!userId) return;
+    const id = localStorage.getItem("id");
+    const finalId = id || userId;
+    if (!finalId) return;
 
     try {
-      const { data } = await axios.get(`${backendUrl}/history/${userId}`);
+      const { data } = await axios.get(`${backendUrl}/history/${finalId}`);
       setTestHistory(data.tests || []);
       calculateScores(data.tests || []);
     } catch (err) {
@@ -72,31 +78,37 @@ const Profile = () => {
   const handleSave = async (e) => {
     e.preventDefault();
     const userId = localStorage.getItem("userId");
-    if (!userId) return;
+    const id = localStorage.getItem("id");
+    const finalId = id || userId;
+    if (!finalId) return;
 
     const profilePic = getProfilePicByGender(formData.gender);
 
     try {
-      await axios.put(`${backendUrl}/user/${userId}`, {
+      await axios.put(`${backendUrl}/user/${finalId}`, {
         name: formData.name,
         gender: formData.gender,
-        profilePic
+        profilePic,
       });
 
       const storedUser = JSON.parse(localStorage.getItem("user")) || {};
-      localStorage.setItem("user", JSON.stringify({
-        ...storedUser,
-        name: formData.name,
-        profilePic
-      }));
+      localStorage.setItem(
+        "user",
+        JSON.stringify({
+          ...storedUser,
+          name: formData.name,
+          profilePic,
+        })
+      );
 
       setEditMode(false);
       fetchUserProfile();
     } catch (err) {
       console.error("Error updating profile", err);
-      setMessage(err.response?.data?.detail || 'Update failed');
+      setMessage(err.response?.data?.detail || "Update failed");
     }
   };
+
 
   return (
     <div className="min-h-screen bg-gradient-to-tr from-orange-100 via-pink-100 to-blue-100">
@@ -244,10 +256,10 @@ const Profile = () => {
                     <td className="px-5 py-3">
                       <span
                         className={`px-3 py-1 rounded-full text-white text-xs font-semibold ${test.score >= 80
-                            ? 'bg-green-500'
-                            : test.score >= 50
-                              ? 'bg-yellow-500'
-                              : 'bg-red-500'
+                          ? 'bg-green-500'
+                          : test.score >= 50
+                            ? 'bg-yellow-500'
+                            : 'bg-red-500'
                           }`}
                       >
                         {test.score} / {test.total}

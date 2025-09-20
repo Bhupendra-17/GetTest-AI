@@ -16,6 +16,7 @@ SUPABASE_KEY = os.getenv("SUPABASE_KEY")
 CASHFREE_APP_ID = os.getenv("CASHFREE_APP_ID")
 CASHFREE_SECRET = os.getenv("CASHFREE_SECRET")
 FRONTEND_URL = os.getenv("FRONTEND_URL")
+BACKEND_URL = os.getenv("BACKEND_URL")
 CASHFREE_BASE_URL = os.getenv("CASHFREE_BASE_URL")
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
@@ -25,7 +26,7 @@ PLAN_DAYS = {
     "bimonthly": 60
 }
 
-CASHFREE_BASE_URL = "https://sandbox.cashfree.com/"
+CASHFREE_BASE_URL = "https://sandbox.cashfree.com/pg"
 
 class PaymentRequest(BaseModel):
     plan_id: str  # weekly, monthly, bimonthly
@@ -51,37 +52,36 @@ async def create_payment(payload: PaymentRequest, request: Request):
     start_date = date.today()
     end_date = start_date + timedelta(days=duration_days)
 
-    # Get Cashfree access token
+    # 1️⃣ Get Cashfree Auth Token
     async with httpx.AsyncClient() as client:
-        auth_res = await client.post(
-            f"{CASHFREE_BASE_URL}/v1/auth/tokens",
-            json={
-                "client_id": CASHFREE_APP_ID,
-                "client_secret": CASHFREE_SECRET
-            },
-            headers={"Content-Type": "application/json"}
+        token_res = await client.post(
+            f"{CASHFREE_BASE_URL}/v2/authorization/token",
+            headers={
+                "x-client-id": CASHFREE_APP_ID,
+                "x-client-secret": CASHFREE_SECRET,
+            }
         )
-        if auth_res.status_code != 200:
-            raise HTTPException(status_code=500, detail="Failed to authenticate with Cashfree")
-        auth_token = auth_res.json()["data"]["token"]
+        if token_res.status_code != 200:
+            raise HTTPException(status_code=500, detail="Failed to fetch Cashfree token")
+        auth_token = token_res.json()["data"]["token"]
 
+    # 2️⃣ Create Payment Order
     payment_payload = {
         "order_id": order_id,
         "order_amount": payload.amount,
         "order_currency": "INR",
         "customer_details": {
-            "customer_id": email,
+            "customer_id": user_id,
             "customer_email": email,
-            "customer_phone": payload.phone or ""
+            "customer_phone": payload.phone or "9999999999"
         },
         "order_note": f"Subscription for {payload.plan_id} plan",
         "order_meta": {
             "return_url": f"{FRONTEND_URL}/payment-success?order_id={order_id}",
-            "notify_url": f"{FRONTEND_URL}/payment-webhook"
+            "notify_url": f"{BACKEND_URL}/cashfree-webhook"
         }
     }
 
-# POST /v2/orders with Bearer token
     async with httpx.AsyncClient() as client:
         res = await client.post(
             f"{CASHFREE_BASE_URL}/v2/orders",
@@ -89,14 +89,16 @@ async def create_payment(payload: PaymentRequest, request: Request):
             headers={
                 "Authorization": f"Bearer {auth_token}",
                 "Content-Type": "application/json",
-                "x-api-version": "2022-09-01"  # recommend specifying version
+                "x-api-version": "2022-09-01"
             }
         )
-        if res.status_code not in [200, 201]:
-            raise HTTPException(status_code=500, detail="Payment creation failed")
-        payment_data = res.json()
-        payment_link = payment_data["payment_session_id"]  # or res.json()["data"]["payment_link"]
 
+    if res.status_code not in [200, 201]:
+        raise HTTPException(status_code=500, detail="Payment creation failed")
+
+    payment_data = res.json()
+
+    # 3️⃣ Save transaction
     await supabase.table("transactions").insert({
         "email": email,
         "user_id": user_id,
@@ -105,10 +107,11 @@ async def create_payment(payload: PaymentRequest, request: Request):
         "phone": payload.phone,
         "status": "INITIATED",
         "order_id": order_id,
+        "cashfree_order_id": payment_data.get("cf_order_id"),
         "payment_link": payment_data["payment_link"],
         "start_date": start_date.isoformat(),
         "end_date": end_date.isoformat(),
-        "is_active": True
+        "is_active": False
     }).execute()
 
     return {"success": True, "payment_link": payment_data["payment_link"]}
@@ -123,13 +126,15 @@ class WebhookPayload(BaseModel):
 @router.post("/cashfree-webhook")
 async def cashfree_webhook(request: Request):
     payload = await request.json()
-    order_id = payload["order"]["order_id"]
-    order_status = payload["order"]["order_status"]
+    order_id = payload.get("order_id") or payload.get("order", {}).get("order_id")
+    order_status = payload.get("order_status") or payload.get("order", {}).get("order_status")
+
     # ... validate signature here if needed ...
     supabase.table("transactions").update({
         "status": order_status,
         "confirmation_time": payload.get("payment_time", datetime.utcnow().isoformat()),
-        "is_active": order_status in ["PAID", "SUCCESS"]
+        "payment_time": payload.get("payment_time", datetime.utcnow().isoformat()),
+        "is_active": order_status.upper() in ["PAID", "SUCCESS"]
     }).eq("order_id", order_id).execute()
     return {"success": True}
 

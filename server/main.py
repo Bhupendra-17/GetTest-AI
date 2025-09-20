@@ -1,11 +1,13 @@
 from fastapi import FastAPI
-from routes import test, auth, users,payment
+from routes import test, auth, users,payment, oauth
 import motor.motor_asyncio
 import os
 from dotenv import load_dotenv
 from fastapi.middleware.cors import CORSMiddleware
 from middleware.size_limit import LimitUploadSizeMiddleware
 from fastapi.staticfiles import StaticFiles
+from supabase import create_client
+import os
 
 load_dotenv()
 
@@ -28,17 +30,21 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Load from env
+SUPABASE_URL = os.getenv("SUPABASE_URL")
+SUPABASE_KEY = os.getenv("SUPABASE_KEY")
+
+supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
+
 # Include Routers
 app.include_router(test.router)
 app.include_router(auth.router)
+app.include_router(oauth.router)
 app.include_router(users.router)
 app.include_router(payment.router)
 
 # Register middleware
 app.add_middleware(LimitUploadSizeMiddleware)
-
-app.mount("/static", StaticFiles(directory="static"), name="static")
-
 
 @app.get("/")
 async def root():

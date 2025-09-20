@@ -16,8 +16,8 @@ const Home = () => {
         <div className="flex-1 w-full px-4 sm:px-6 lg:px-8 py-10">
           <div className="text-center mb-8">
             <h1 className="text-3xl md:text-4xl font-bold">Welcome, Aspirant!</h1>
-            <h2 className="text-2xl md:text-3xl font-bold mt-2">Generate Mock Tests from PDF</h2>
-            <p className="text-lg mt-4">Generate Mock Tests Instantly from Any PDF!</p>
+            <h2 className="text-2xl md:text-3xl font-bold mt-2">Generate Mock Tests using the power of AI</h2>
+            <p className="text-lg mt-4">Generate Mock Tests Instantly and Practice!</p>
           </div>
 
           <div className="text-center mb-8">

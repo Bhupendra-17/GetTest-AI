@@ -3,7 +3,7 @@ import axios from 'axios';
 
 export const checkTestEligibility = async (token) => {
   try {
-    const res = await axios.get(`${process.env.REACT_APP_BACKEND_URL}/can-take-test`, {
+    const res = await axios.get(`${process.env.VITE_BACKEND_URL}/can-take-test`, {
       headers: {
         Authorization: `Bearer ${token}`,
       },
