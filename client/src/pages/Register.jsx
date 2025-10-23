@@ -2,8 +2,6 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import Navbar from '../components/Navbar';
-import { supabase } from '../utils/supabaseClient';
-
 const Register = () => {
   const navigate = useNavigate();
   const [name, setName] = useState('');
@@ -38,11 +36,6 @@ const Register = () => {
       console.error(err);
       setMessage(err.response?.data?.detail || 'Registration failed');
     }
-  };
-
-  // 🔹 Google OAuth Signup (actually same as login in Supabase)
-  const handleGoogleSignup = () => {
-    window.location.href = `${import.meta.env.VITE_BACKEND_URL}/auth/google/login`;
   };
 
   return (
@@ -104,16 +97,6 @@ const Register = () => {
               </Link>
             </div>
           </form>
-
-          {/* 🔹 Google Register Button */}
-          <div className="mt-6 text-center">
-            <button
-              onClick={handleGoogleSignup}
-              className="w-full bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded-full"
-            >
-              Continue with Google
-            </button>
-          </div>
         </div>
       </div>
     </div>

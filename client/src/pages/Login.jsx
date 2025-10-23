@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import Navbar from '../components/Navbar';
-import { supabase } from '../utils/supabaseClient';
 
 const Login = () => {
   const navigate = useNavigate();
@@ -33,10 +32,6 @@ const Login = () => {
     }
   };
 
-  // 🔹 Google OAuth Login 
-  const loginWithGoogle = () => {
-    window.location.href = `${import.meta.env.VITE_BACKEND_URL}/auth/google/login`;
-  };
 
 
   return (
@@ -85,16 +80,6 @@ const Login = () => {
               </Link>
             </div>
           </form>
-
-          {/* 🔹 Google Login Button */}
-          <div className="mt-6 text-center">
-            <button
-              onClick={loginWithGoogle}
-              className="w-full bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded-full"
-            >
-              Continue with Google
-            </button>
-          </div>
         </div>
       </div>
     </div>

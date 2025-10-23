@@ -131,7 +131,7 @@ const Home = () => {
               transition: { duration: 0.8, staggerChildren: 0.3 },
             },
           }}
-          className="w-full bg-white shadow-lg rounded-2xl p-8 mt-10 mb-10 mx-auto max-w-5xl"
+          className="w-full bg-white shadow-lg rounded-2xl p-8 mt-16 mb-10 mx-auto max-w-5xl"
         >
           <h2 className="text-3xl font-semibold text-gray-800 mb-6 text-center">
             Why Learners Love <span className="text-orange-500">GetTest AI</span>
@@ -142,7 +142,7 @@ const Home = () => {
             Here’s what makes it the go-to tool for smart preparation:
           </p>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 py-4">
             {[
               {
                 icon: '🧠',
@@ -175,16 +175,16 @@ const Home = () => {
           </div>
 
           {/* Stats Subsection */}
-          <motion.div
+          {/* <motion.div
             initial={{ opacity: 0 }}
             whileInView={{ opacity: 1 }}
             transition={{ delay: 0.6, duration: 1 }}
             className="mt-12 grid grid-cols-1 sm:grid-cols-3 gap-6 text-center"
           >
             {[
-              { value: '10K+', label: 'Mock Tests Generated' },
-              { value: '5K+', label: 'Active Learners' },
-              { value: '98%', label: 'User Satisfaction Rate' },
+              { value: '100+', label: 'Mock Tests Generated' },
+              { value: '5+', label: 'Active Learners' },
+              { value: '90%', label: 'User Satisfaction Rate' },
             ].map((stat, i) => (
               <motion.div
                 key={i}
@@ -195,7 +195,7 @@ const Home = () => {
                 <div className="text-sm opacity-90">{stat.label}</div>
               </motion.div>
             ))}
-          </motion.div>
+          </motion.div> */}
         </motion.section>
 
         <Footer />
