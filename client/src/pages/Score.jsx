@@ -4,7 +4,7 @@ import axios from 'axios';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from 'recharts';
-
+import { Link } from 'react-router-dom';
 const COLORS = ['#10b981', '#ef4444', '#9ca3af'];
 
 const Score = () => {
@@ -40,7 +40,7 @@ const Score = () => {
     // Check if the submission has already happened or if the required data is missing.
     // This is the core logic that prevents the duplicate call.
     if (hasSubmitted.current || !questions.length || !userId) {
-      return; 
+      return;
     }
 
     // Set the ref's value to true. This blocks any future attempts.
@@ -71,8 +71,8 @@ const Score = () => {
         // Reset the flag if the call fails, allowing a retry on the next render.
         hasSubmitted.current = false;
       });
-  
-  // The empty dependency array ensures this effect runs ONLY once on mount.
+
+    // The empty dependency array ensures this effect runs ONLY once on mount.
   }, []);
 
   return (
@@ -147,13 +147,12 @@ const Score = () => {
                 return (
                   <p
                     key={i}
-                    className={`px-3 py-1 rounded ${
-                      isCorrect
-                        ? 'bg-green-200'
-                        : isSelected
+                    className={`px-3 py-1 rounded ${isCorrect
+                      ? 'bg-green-200'
+                      : isSelected
                         ? 'bg-red-200'
                         : 'bg-gray-100'
-                    }`}
+                      }`}
                   >
                     {opt}
                   </p>
@@ -165,6 +164,14 @@ const Score = () => {
             </div>
           ))}
         </div>
+
+      </div>
+      <div className='py-10 flex w-full items-center justify-center'>
+        <Link to='/profile'>
+          <button className='text-xl cursor-pointer hover:bg-green-600 bg-black px-4 py-2 rounded-3xl text-amber-50 font-semibold'>
+            Profile
+          </button>
+        </Link>
       </div>
       <Footer />
     </div>

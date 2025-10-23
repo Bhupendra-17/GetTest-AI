@@ -1,75 +1,100 @@
 import React, { useState, useEffect, useRef } from 'react';
-import {Link} from 'react-router-dom';
+import { Link } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
+import { FiMenu, FiX } from 'react-icons/fi';
+
 const Sidebar = () => {
   const [isOpen, setIsOpen] = useState(false);
-  const sidebarRef = useRef(null); // Reference to the sidebar
+  const sidebarRef = useRef(null);
 
-  const toggleSidebar = () => {
-    setIsOpen(!isOpen);
-  };
+  const toggleSidebar = () => setIsOpen(!isOpen);
 
-  // Close the sidebar when clicking outside of it
+  // Close when clicking outside
   useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (sidebarRef.current && !sidebarRef.current.contains(event.target)) {
+    const handleClickOutside = (e) => {
+      if (sidebarRef.current && !sidebarRef.current.contains(e.target)) {
         setIsOpen(false);
       }
     };
-
-    if (isOpen) {
-      document.addEventListener('mousedown', handleClickOutside);
-    } else {
-      document.removeEventListener('mousedown', handleClickOutside);
-    }
-
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside); // Cleanup on unmount
-    };
+    if (isOpen) document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [isOpen]);
 
-  return (
-    <div className="flex">
-      {/* Sidebar */}
-      <div
-        ref={sidebarRef} // Attach the ref to the sidebar div
-        className={`fixed top-0 left-0 z-10 h-full w-64 backdrop-blur-sm bg-slate-100/30 py-6 pl-4 transform ${
-          isOpen ? 'translate-x-0' : '-translate-x-full'
-        } transition-transform duration-300 ease-in-out`}
-      >
-        <button
-          onClick={toggleSidebar}
-          className="p-3 mb-2 text-2xl  rounded-full hover:bg-gray-500 hover:cursor-pointer transition"
-        >
-          <i className="fa-solid fa-bars"></i>
-        </button>
-        <ul>
-          <li className="py-1.5 -ml-2 px-2 w-full hover:text-gray-900 hover:font-semibold">
-            <Link to='/'>Home</Link>
-          </li>
-          <li className="py-1.5 -ml-2 px-2 w-full hover:text-gray-900 hover:font-semibold">
-            <Link to='/profile'>Profile</Link>
-          </li>
-          <li className="py-1.5 -ml-2 px-2 w-full hover:text-gray-900 hover:font-semibold">
-            <Link to='/main'>Get Started</Link>
-          </li>
-          <li className="py-1.5 -ml-2 px-2 w-full hover:text-gray-900 hover:font-semibold">
-            <Link to='/pricing'>Pricing</Link>
-          </li>
-          <li className="py-1.5 -ml-2 px-2 w-full hover:text-gray-900 hover:font-semibold">
-            <Link to='/'>About</Link>
-          </li>
-        </ul>
-      </div>
+  const menuItems = [
+    { label: 'Home', path: '/' },
+    { label: 'Profile', path: '/profile' },
+    { label: 'Get Started', path: '/main' },
+    { label: 'Pricing', path: '/pricing' },
+    { label: 'About', path: '/about' },
+  ];
 
-      {/* Main content */}
-      <div className="flex ">
-        <button
-          onClick={toggleSidebar}
-          className="m-4 p-3 text-2xl rounded-full hover:bg-gray-500 hover:cursor-pointer transition"
-        >
-          <i className="fa-solid fa-bars"></i>
-        </button>
-      </div>
+  return (
+    <div className="flex items-center">
+      {/* Toggle button */}
+      <motion.button
+        whileHover={{ scale: 1.1 }}
+        whileTap={{ scale: 0.95 }}
+        onClick={toggleSidebar}
+        className="m-4 p-3 text-2xl rounded-full bg-white/20 hover:bg-white/40 text-gray-800 shadow-md backdrop-blur-md transition"
+      >
+        {isOpen ? <FiX /> : <FiMenu />}
+      </motion.button>
+
+      {/* Sidebar Animated Panel */}
+      <AnimatePresence>
+        {isOpen && (
+          <motion.div
+            ref={sidebarRef}
+            initial={{ x: -300, opacity: 0 }}
+            animate={{ x: 0, opacity: 1 }}
+            exit={{ x: -300, opacity: 0 }}
+            transition={{ type: 'spring', stiffness: 100, damping: 15 }}
+            className="fixed top-0 left-0 z-50 h-full w-64 bg-gradient-to-br from-white/70 to-orange-100/80 
+                       backdrop-blur-md shadow-2xl rounded-r-2xl border-r border-white/40"
+          >
+            <div className="flex flex-col h-full justify-between py-6 px-5">
+              {/* Header */}
+              <div>
+                <h2 className="text-2xl font-bold text-gray-800 mb-6">
+                  Get<span className="text-orange-500">Test</span> AI
+                </h2>
+
+                {/* Menu Items */}
+                <ul className="space-y-3">
+                  {menuItems.map((item, index) => (
+                    <motion.li
+                      key={index}
+                      initial={{ opacity: 0, x: -10 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: index * 0.1 }}
+                    >
+                      <Link
+                        to={item.path}
+                        onClick={() => setIsOpen(false)}
+                        className="block px-3 py-2 text-gray-700 font-medium rounded-lg 
+                                   hover:bg-gradient-to-r hover:from-orange-400 hover:to-pink-400 
+                                   hover:text-white transition-all duration-200"
+                      >
+                        {item.label}
+                      </Link>
+                    </motion.li>
+                  ))}
+                </ul>
+              </div>
+
+              {/* Footer text */}
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.6 }}
+                className="text-center text-sm text-gray-500"
+              >
+                © {new Date().getFullYear()} GetTest AI
+              </motion.div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };
