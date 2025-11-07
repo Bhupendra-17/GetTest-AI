@@ -24,7 +24,6 @@ const Sidebar = () => {
     { label: 'Home', path: '/' },
     { label: 'Profile', path: '/profile' },
     { label: 'Get Started', path: '/main' },
-    { label: 'Pricing', path: '/pricing' },
     { label: 'About', path: '/about' },
   ];
 

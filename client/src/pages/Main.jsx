@@ -13,17 +13,29 @@ const Main = () => {
   const [role, setRole] = useState("");
   const [subject, setSubject] = useState("");
   const [mode, setMode] = useState("pdf");
+  const [step, setStep] = useState(1);
+  const [timeLimit, setTimeLimit] = useState("");
   const backendUrl = import.meta.env.VITE_BACKEND_URL;
   const navigate = useNavigate();
   const token = localStorage.getItem("token");
 
   const handleFileUpload = (e) => {
     const uploadedFile = e.target.files[0];
-    if (uploadedFile) setFile(uploadedFile);
+    if (!uploadedFile) return;
+
+    const sizeMB = uploadedFile.size / (1024 * 1024); // convert to MB
+
+    if (sizeMB > 5) {
+      alert(`File too large (${sizeMB.toFixed(2)} MB). Max allowed is 5 MB.`);
+      e.target.value = ""; // reset file input
+      setFile(null);
+      return;
+    }
+    setFile(uploadedFile);
   };
 
   const handleGenerateFromRole = async () => {
-    if (!role || !subject || !numQuestions) {
+    if (!role || !subject || !numQuestions || !timeLimit) {
       alert("Please select role, subject and question count.");
       return;
     }
@@ -39,7 +51,7 @@ const Main = () => {
         }),
       });
       const data = await res.json();
-      navigate("/test", { state: { questions: data.questions } });
+      navigate("/test", { state: { questions: data.questions, timeLimit: Number(timeLimit) } });
     } catch (err) {
       console.error(err);
       alert("Error generating test.");
@@ -47,10 +59,10 @@ const Main = () => {
       setLoading(false);
     }
   };
-
+  
   const handleGenerateTest = async () => {
-    if (!file || !numQuestions) {
-      alert("Please provide all inputs.");
+    if (!file || !numQuestions || !timeLimit) {
+      alert("Please provide all inputs ");
       return;
     }
     setLoading(true);
@@ -59,6 +71,7 @@ const Main = () => {
     formData.append("num_questions", numQuestions);
     formData.append("role", role);
     formData.append("subject", subject);
+    formData.append("time_limit", timeLimit);
     try {
       const res = await fetch(`${backendUrl}/generate-test/`, {
         method: "POST",
@@ -112,21 +125,19 @@ const Main = () => {
           <div className="bg-white/20 backdrop-blur-md rounded-2xl overflow-hidden flex border border-white/30">
             <button
               onClick={() => setMode("pdf")}
-              className={`px-6 py-3 flex items-center gap-2 text-lg font-semibold transition-all duration-300 ${
-                mode === "pdf"
-                  ? "bg-gradient-to-r from-orange-500 to-red-500 text-white shadow-lg"
-                  : "text-white/80 hover:text-white"
-              }`}
+              className={`px-6 py-3 flex items-center gap-2 text-lg font-semibold transition-all duration-300 ${mode === "pdf"
+                ? "bg-gradient-to-r from-orange-500 to-red-500 text-white shadow-lg"
+                : "text-white/80 hover:text-white"
+                }`}
             >
               <FiCpu /> From PDF
             </button>
             <button
               onClick={() => setMode("role")}
-              className={`px-6 py-3 flex items-center gap-2 text-lg font-semibold transition-all duration-300 ${
-                mode === "role"
-                  ? "bg-gradient-to-r from-orange-500 to-red-500 text-white shadow-lg"
-                  : "text-white/80 hover:text-white"
-              }`}
+              className={`px-6 py-3 flex items-center gap-2 text-lg font-semibold transition-all duration-300 ${mode === "role"
+                ? "bg-gradient-to-r from-orange-500 to-red-500 text-white shadow-lg"
+                : "text-white/80 hover:text-white"
+                }`}
             >
               <FiBookOpen /> From Role
             </button>
@@ -153,6 +164,8 @@ const Main = () => {
             setNumQuestions={setNumQuestions}
             setRole={setRole}
             setSubject={setSubject}
+            timeLimit={timeLimit}
+            setTimeLimit={setTimeLimit}
           />
         </motion.div>
 

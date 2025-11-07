@@ -1,12 +1,15 @@
 from fastapi import FastAPI
 from routes import test, auth, users,payment, oauth
-import motor.motor_asyncio
-import os
+from supabase import create_client
 from dotenv import load_dotenv
 from fastapi.middleware.cors import CORSMiddleware
 from middleware.size_limit import LimitUploadSizeMiddleware
 from fastapi.staticfiles import StaticFiles
-from supabase import create_client
+from fastapi import FastAPI
+from middleware.size_limit import LimitUploadSizeMiddleware
+import motor.motor_asyncio
+import os
+
 import os
 
 load_dotenv()
@@ -20,6 +23,9 @@ MONGO_DETAILS = os.getenv("MONGO_URI")
 client = motor.motor_asyncio.AsyncIOMotorClient(MONGO_DETAILS)
 database = client[os.getenv("DB_NAME")]
 app.database = database  # Attach to app so it can be accessed via request.app.database
+
+# ✅ Add middleware
+app.add_middleware(LimitUploadSizeMiddleware)
 
 # CORS
 app.add_middleware(

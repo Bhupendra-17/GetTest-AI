@@ -13,6 +13,7 @@ import ScorewithId from './pages/Scorewithid'
 import PaymentPlans from './pages/PaymentPlans'
 import PaymentSuccess from './pages/PaymentSuccess'
 import PaymentFailure from './pages/PaymentFailure'
+import About from './pages/About';
 
 const App = () => {
   return (
@@ -29,6 +30,7 @@ const App = () => {
           <Route path='/score/:testId' element = {<ScorewithId />}></Route>
           <Route path='/profile' element = {<Profile />}></Route>
           <Route path='/pricing' element = {<PaymentPlans />}></Route>
+          <Route path='/about' element = {<About />}></Route>
           <Route path='/payment-success' element = {<PaymentSuccess />}></Route>
           <Route path='/payment-failure' element = {<PaymentFailure />}></Route>
         </Routes>

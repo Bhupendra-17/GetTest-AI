@@ -81,11 +81,7 @@ def parse_questions_robust(text: str):
 
 # 1. Generate test from PDF
 @router.post("/generate-test/")
-async def generate_test(
-    request: Request,
-    file: UploadFile = File(...),
-    num_questions: int = Form(...)
-):
+async def generate_test(request: Request,file: UploadFile = File(...), num_questions: int = Form(...)):
     try:
         # Step 1: Authenticate user via JWT
         auth_header = request.headers.get("Authorization")
@@ -124,6 +120,12 @@ async def generate_test(
 
         # Step 4: Generate questions and parse using the robust function
         response_text = await generate_questions(content, num_questions)
+        if not response_text.strip():
+            raise HTTPException(status_code=500, detail="AI did not return any text.")
+        questions = parse_questions_robust(response_text)
+        if not questions:
+            raise HTTPException(status_code=500, detail="Failed to parse questions from AI output.")
+
         questions = parse_questions_robust(response_text)
 
         # Step 5: Update user's test usage

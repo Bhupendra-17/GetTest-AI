@@ -29,7 +29,7 @@ const Profile = () => {
   };
 
   const fetchUserProfile = async () => {
-    const id = localStorage.getItem("id") || localStorage.getItem("userId");
+    const id = localStorage.getItem("userId");
     if (!id) return;
     try {
       const { data } = await axios.get(`${backendUrl}/user/${id}`);
@@ -45,7 +45,7 @@ const Profile = () => {
   };
 
   const fetchTestHistory = async () => {
-    const id = localStorage.getItem("id") || localStorage.getItem("userId");
+    const id = localStorage.getItem("userId");
     if (!id) return;
     try {
       const { data } = await axios.get(`${backendUrl}/history/${id}`);
