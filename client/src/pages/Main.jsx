@@ -69,13 +69,9 @@ const Main = () => {
     const formData = new FormData();
     formData.append("file", file);
     formData.append("num_questions", numQuestions);
-    formData.append("role", role);
-    formData.append("subject", subject);
-    formData.append("time_limit", timeLimit);
     try {
-      const res = await fetch(`${backendUrl}/generate-test/`, {
+      const res = await fetch(`${backendUrl}/generate_test/`, {
         method: "POST",
-        headers: { Authorization: `Bearer ${token}` },
         body: formData,
       });
       const data = await res.json();
@@ -139,7 +135,7 @@ const Main = () => {
                 : "text-white/80 hover:text-white"
                 }`}
             >
-              <FiBookOpen /> From Role
+              <FiBookOpen /> Sectional
             </button>
           </div>
         </motion.div>

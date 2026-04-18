@@ -125,16 +125,15 @@ export default function TestCreationSteps({
             <div className="text-center bg-white/70 rounded-2xl p-8 shadow-lg border-2 border-orange-300">
               <h3 className="text-2xl font-bold text-gray-800 mb-3">Review & Generate Test</h3>
               <p className="text-lg text-gray-700 mb-4">
-                <span className="font-bold text-red-600">{numQuestions}</span> questions from your uploaded PDF.
+                <span className="font-bold text-red-600">{numQuestions}</span> questions selected.
               </p>
               <WheelPicker value={timeLimit} onChange={setTimeLimit} min={5} max={60} step={5} unit=" min" color="red" height={200} />
               <motion.button
                 onClick={handleGenerateTest}
                 disabled={loading || !file || !numQuestions || !timeLimit}
                 whileHover={{ scale: loading ? 1 : 1.05 }}
-                className={`mt-6 px-12 py-4 rounded-full text-white font-bold flex items-center gap-3 mx-auto bg-gradient-to-r from-orange-500 to-red-500 shadow-xl ${
-                  loading || !file || !numQuestions || !timeLimit ? "opacity-50 cursor-not-allowed" : "hover:shadow-2xl"
-                }`}
+                className={`mt-6 px-12 py-4 rounded-full text-white font-bold flex items-center gap-3 mx-auto bg-gradient-to-r from-orange-500 to-red-500 shadow-xl ${loading || !file || !numQuestions || !timeLimit ? "opacity-50 cursor-not-allowed" : "hover:shadow-2xl"
+                  }`}
               >
                 {loading ? "Generating..." : <> <FiCheckCircle size={22} /> Generate Test </>}
               </motion.button>
@@ -152,11 +151,10 @@ export default function TestCreationSteps({
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 1.03 }}
                   onClick={() => setRole(opt.value)}
-                  className={`flex items-center justify-between px-6 py-4 rounded-2xl border-2 shadow-md text-lg font-semibold ${
-                    role === opt.value
+                  className={`flex items-center justify-between px-6 py-4 rounded-2xl border-2 shadow-md text-lg font-semibold ${role === opt.value
                       ? "bg-gradient-to-r from-orange-500 to-red-500 text-white border-transparent"
                       : "bg-white/70 border-orange-300 hover:border-orange-500"
-                  }`}
+                    }`}
                 >
                   <div className="flex items-center gap-3">
                     <opt.icon size={22} />
@@ -176,11 +174,10 @@ export default function TestCreationSteps({
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 1.03 }}
                   onClick={() => setSubject(opt.value)}
-                  className={`flex items-center justify-between px-6 py-4 rounded-2xl border-2 shadow-md text-lg font-semibold ${
-                    subject === opt.value
+                  className={`flex items-center justify-between px-6 py-4 rounded-2xl border-2 shadow-md text-lg font-semibold ${subject === opt.value
                       ? "bg-gradient-to-r from-orange-500 to-red-500 text-white border-transparent"
                       : "bg-white/70 border-orange-300 hover:border-orange-500"
-                  }`}
+                    }`}
                 >
                   <div className="flex items-center gap-3">
                     <opt.icon size={22} />
@@ -220,9 +217,8 @@ export default function TestCreationSteps({
                 onClick={handleGenerateFromRole}
                 disabled={loading || !role || !subject || !numQuestions || !timeLimit}
                 whileHover={{ scale: loading ? 1 : 1.05 }}
-                className={`bg-gradient-to-r px-12 py-4 rounded-full from-orange-500 to-red-500 text-white font-bold flex items-center gap-3 mx-auto ${
-                  loading || !role || !subject || !numQuestions || !timeLimit ? "opacity-50 cursor-not-allowed" : "hover:shadow-2xl"
-                }`}
+                className={`bg-gradient-to-r px-12 py-4 rounded-full from-orange-500 to-red-500 text-white font-bold flex items-center gap-3 mx-auto ${loading || !role || !subject || !numQuestions || !timeLimit ? "opacity-50 cursor-not-allowed" : "hover:shadow-2xl"
+                  }`}
               >
                 {loading ? "Generating..." : <> <FiCheckCircle size={22} /> Generate Test </>}
               </motion.button>
@@ -257,6 +253,7 @@ export default function TestCreationSteps({
         </AnimatePresence>
       </div>
 
+      {/* Navigation buttons */}
       <div className="flex justify-between mt-10">
         {step > 1 ? (
           <motion.button
@@ -269,20 +266,33 @@ export default function TestCreationSteps({
         ) : (
           <div></div>
         )}
-        {step < totalSteps && (
+
+        {/* ✅ Show Next or Generate depending on step */}
+        {step < totalSteps ? (
           <motion.button
             onClick={nextStep}
             whileHover={{ scale: canProceed() ? 1.05 : 1 }}
-            className={`flex items-center gap-2 px-6 py-3 rounded-full font-semibold shadow-lg ${
-              canProceed()
+            className={`flex items-center gap-2 px-6 py-3 rounded-full font-semibold shadow-lg ${canProceed()
                 ? "bg-gradient-to-r from-orange-500 to-red-500 text-white hover:from-orange-600 hover:to-red-600"
                 : "bg-gray-300 text-gray-500 cursor-not-allowed"
-            }`}
+              }`}
           >
             Next <FiArrowRight />
           </motion.button>
-        )}
+        ) : mode === "pdf" ? (
+          <motion.button
+            onClick={handleGenerateTest}
+            disabled={loading || !file || !numQuestions || !timeLimit}
+            whileHover={{ scale: loading ? 1 : 1.05 }}
+            className={`flex items-center gap-2 px-6 py-3 rounded-full font-semibold shadow-lg ${loading || !file || !numQuestions || !timeLimit
+                ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+                : "bg-gradient-to-r from-orange-500 to-red-500 text-white hover:from-orange-600 hover:to-red-600"
+              }`}
+          >
+            {loading ? "Generating..." : <> <FiCheckCircle size={22} /> Generate </>}
+          </motion.button>
+        ) : null}
       </div>
-    </motion.div>
-  );
+      </motion.div>
+    );
 }

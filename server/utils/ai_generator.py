@@ -8,7 +8,7 @@ OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY")
 
 async def generate_questions(content: str, num_questions: int):
     prompt = f"""
-    Generate {num_questions} medium-hard level multiple-choice questions from the text that have subject necessary information and should be useful for the candidate exams. Each question must have 4 options (A–D) and an answer in this format:
+    Generate exactly {num_questions} medium-hard level multiple-choice questions from the text that have subject necessary information and should be useful for the candidate exams. Each question must have 4 options (A–D) and an answer in this format:
 
     Question?
     A) ...

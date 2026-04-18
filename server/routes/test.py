@@ -12,10 +12,12 @@ from utils.pdf_processor import extract_text_from_pdf
 from utils.ai_generator import generate_questions
 from utils.bank_sectional_test import generate_sectional
 from utils.test_tracker import can_take_test
-
 # Models and Database
 from config import db  # ✅ import your connected DB
 test_usage_collection = db.test_usages
+
+from models.test import TestResultSubmission
+from models.sectional import SectionalRequest
 
 # Auth
 from utils.jwt_handler import decode_token
@@ -24,26 +26,6 @@ router = APIRouter()
 
 UPLOAD_DIR = "uploads"
 os.makedirs(UPLOAD_DIR, exist_ok=True)
-
-class SectionalRequest(BaseModel):
-    role: str
-    subject: str
-    num_questions: int
-
-# Pydantic models matching the frontend payload
-class QuestionAnswer(BaseModel):
-    text: str
-    options: List[str]
-    answer: str
-    userAnswer: Optional[str] = None
-
-class TestResultSubmission(BaseModel):
-    user_id: str
-    title: str
-    score: int
-    total: int
-    timeTaken: Optional[int] = None
-    questions: List[QuestionAnswer]
 
 # Utility function to parse questions (now more robust with regex)
 def parse_questions_robust(text: str):
@@ -79,74 +61,59 @@ def parse_questions_robust(text: str):
 
     return questions
 
-# 1. Generate test from PDF
-@router.post("/generate-test/")
-async def generate_test(request: Request,file: UploadFile = File(...), num_questions: int = Form(...)):
+@router.post("/generate_test/", tags=["Test"])
+async def generate_test(file: UploadFile = File(...), num_questions: int = Form(...)):
     try:
-        # Step 1: Authenticate user via JWT
-        auth_header = request.headers.get("Authorization")
-        if not auth_header:
-            raise HTTPException(status_code=401, detail="Authorization header missing.")
-        
-        token = auth_header.replace("Bearer ", "")
-        try:
-            user = decode_token(token)
-            user_id = user["user_id"]
-        except Exception:
-            raise HTTPException(status_code=401, detail="Invalid token.")
-
-        # Step 2: Enforce free trial limit
-        allowed, count = can_take_test(user_id, test_usage_collection)
-        if not allowed:
-            raise HTTPException(
-                status_code=403,
-                detail="Free trial limit (4 tests/week) reached. Please upgrade your plan."
-            )
-
-        # Step 3: Proceed with PDF check
-        if not file.filename.lower().endswith(".pdf"):
-            raise HTTPException(status_code=400, detail="Only PDF files are supported.")
-
+        # Save uploaded file with unique name
         file_id = str(uuid.uuid4())
         file_path = os.path.join(UPLOAD_DIR, f"{file_id}.pdf")
+
+        # Write uploaded file
         with open(file_path, "wb") as f:
             f.write(await file.read())
 
+        print(f"✅ Received file: {file.filename}, saved as {file_path}")
+        print(f"✅ Generating {num_questions} questions")
+
+        # Extract text from PDF
         content = extract_text_from_pdf(file_path)
         os.remove(file_path)
 
         if not content.strip():
             raise HTTPException(status_code=400, detail="No readable text found in the PDF.")
 
-        # Step 4: Generate questions and parse using the robust function
+        # Generate questions with AI
         response_text = await generate_questions(content, num_questions)
-        if not response_text.strip():
-            raise HTTPException(status_code=500, detail="AI did not return any text.")
-        questions = parse_questions_robust(response_text)
-        if not questions:
-            raise HTTPException(status_code=500, detail="Failed to parse questions from AI output.")
 
-        questions = parse_questions_robust(response_text)
+        # Parse response into structured format
+        questions = []
+        current = {}
 
-        # Step 5: Update user's test usage
-        test_usage_collection.update_one(
-            {"user_id": user_id},
-            {"$inc": {"tests_this_week": 1}}
-        )
+        for line in response_text.strip().split("\n"):
+            line = line.strip()
+            if not line:
+                continue
+            if re.match(r"^\d+\.", line):  # New question line
+                if current:
+                    questions.append(current)
+                current = {"text": line, "options": []}
+            elif re.match(r"^[A-D]\)", line):  # Option line
+                current.setdefault("options", []).append(line)
+            elif line.lower().startswith("answer:"):
+                current["answer"] = line.split(":")[-1].strip()
 
-        return {
-            "questions": questions,
-            "free_tests_used": count + 1,
-            "free_tests_remaining": max(0, 4 - (count + 1))
-        }
+        if current:
+            questions.append(current)
 
-    except HTTPException as http_exc:
-        raise http_exc
+        print(f"✅ Generated {len(questions)} questions successfully.")
+        return {"questions": questions}
+
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        print("❌ Error generating test:", str(e))
+        raise HTTPException(status_code=500, detail=f"Error generating test: {str(e)}")
 
 # 2. Read PDF and return extracted text (No change needed, it's correct)
-@router.post("/upload-and-read-pdf/")
+@router.post("/upload-and-read-pdf/", tags=["Test"])
 async def upload_and_read_pdf(file: UploadFile = File(...)):
     try:
         if not file.filename.lower().endswith(".pdf"):
@@ -164,7 +131,7 @@ async def upload_and_read_pdf(file: UploadFile = File(...)):
         raise HTTPException(status_code=500, detail=f"Error reading PDF: {str(e)}")
 
 # 3. Generate sectional test
-@router.post("/generate_sectional/")
+@router.post("/generate_sectional/", tags=["Test"])
 async def generate_sectional_test(data: SectionalRequest):
     try:
         response_text = await generate_sectional(data.role, data.subject, data.num_questions)
@@ -175,7 +142,7 @@ async def generate_sectional_test(data: SectionalRequest):
         raise HTTPException(status_code=500, detail=str(e))
 
 # 4. Submit/save test result
-@router.post("/submit-test")
+@router.post("/submit-test", tags=["Test"])
 async def submit_test(request: Request, result: TestResultSubmission):
     try:
         db = request.app.database
@@ -187,51 +154,5 @@ async def submit_test(request: Request, result: TestResultSubmission):
             return {"message": "Test result saved", "id": str(insert_result.inserted_id)}
         else:
             raise HTTPException(status_code=500, detail="Failed to save result")
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
-@router.get("/history/{user_id}")
-async def get_user_history(user_id: str, request: Request):
-    try:
-        db = request.app.database
-        
-        # Try ObjectId, fallback to string
-        try:
-            query_id = ObjectId(user_id)
-        except bson_errors.InvalidId:
-            query_id = user_id
-
-        results_cursor = db.test_results.find({"user_id": query_id}).sort("date", -1)
-        results = await results_cursor.to_list(length=100)
-
-        formatted_results = []
-        for r in results:
-            formatted_results.append({
-                "id": str(r["_id"]),
-                "user_id": str(r["user_id"]),
-                "title": r.get("title", "Untitled"),
-                "score": r.get("score", 0),
-                "total": r.get("total", 0),
-                "date": r.get("date", datetime.utcnow()).isoformat(),
-                "timeTaken": r.get("timeTaken"),
-            })
-
-        return {"tests": formatted_results}
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
-@router.get("/test/{test_id}")
-async def get_test_by_id(test_id: str, request: Request):
-    try:
-        db = request.app.database
-        result = await db.test_results.find_one({"_id": ObjectId(test_id)})
-
-        if not result:
-            raise HTTPException(status_code=404, detail="Test not found")
-
-        result["_id"] = str(result["_id"])
-        result["user_id"] = str(result["user_id"])
-
-        return result
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

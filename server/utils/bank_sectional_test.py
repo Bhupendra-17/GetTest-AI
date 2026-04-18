@@ -8,13 +8,14 @@ OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY")
 
 async def generate_sectional(for_role:str, subject: str, num_questions: int):
     prompt = f"""
-    Generate {num_questions} medium-hard level multiple-choice questions from the text that have questions which are asked in previous years of {for_role}. Questions should be related for the candidates. Each question must have exactly four options (A, B, C, D) and an answer in this format:
+    Generate {num_questions} medium-hard level multiple-choice questions from the text that have questions which are asked in previous years of {for_role} in India. Questions should be related for the candidates. Each question must have exactly five options (A, B, C, D, E) and an answer in this format with having correct answer in any of the options:
 
     1. [Question Text]
     A) [Option A text]
     B) [Option B text]
     C) [Option C text]
     D) [Option D text]
+    E) [Option E text]
     Answer: [Correct Letter, e.g., A]
 
     For Role of:

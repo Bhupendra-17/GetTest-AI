@@ -8,7 +8,7 @@ class QuestionAnswer(BaseModel):
     answer: str
     userAnswer: Optional[str] = None
 
-class TestResult(BaseModel):
+class TestResultSubmission(BaseModel):
     user_id: str
     title: str
     score: int
