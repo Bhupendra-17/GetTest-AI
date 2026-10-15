@@ -1,10 +1,8 @@
 from fastapi import FastAPI
-from routes import test, auth, users,payment, oauth, test_history
-# from supabase import create_client
+from routes import test, auth, users, payment, oauth, test_history
 from dotenv import load_dotenv
 from fastapi.middleware.cors import CORSMiddleware
 from middleware.size_limit import LimitUploadSizeMiddleware
-from fastapi import FastAPI
 import motor.motor_asyncio
 import os
 
@@ -17,25 +15,21 @@ FRONTEND_URL = os.getenv("FRONTEND_URL")
 # MongoDB Setup
 MONGO_DETAILS = os.getenv("MONGO_URI")
 client = motor.motor_asyncio.AsyncIOMotorClient(MONGO_DETAILS)
-database = client[os.getenv("DB_NAME")]
+database = client[os.getenv("DB_NAME", "gettest_ai")]
 app.database = database  # Attach to app so it can be accessed via request.app.database
 
-# ✅ Add middleware
+# ✅ Add middleware (registered once)
 app.add_middleware(LimitUploadSizeMiddleware)
 
-# CORS
+# CORS configuration
+allowed_origins = [origin for origin in ["http://localhost:5173", "http://localhost:3000", FRONTEND_URL] if origin]
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173", FRONTEND_URL],  # Vite frontend origin
+    allow_origins=allowed_origins if allowed_origins else ["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-# # Load from env
-# SUPABASE_URL = os.getenv("SUPABASE_URL")
-# SUPABASE_KEY = os.getenv("SUPABASE_KEY")
-
 
 # Include Routers
 app.include_router(test.router)
@@ -44,8 +38,6 @@ app.include_router(oauth.router)
 app.include_router(users.router)
 app.include_router(payment.router)
 app.include_router(test_history.router)
-# Register middleware
-app.add_middleware(LimitUploadSizeMiddleware)
 
 @app.get("/")
 async def root():

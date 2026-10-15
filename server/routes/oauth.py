@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, Request, HTTPException
 from fastapi.responses import RedirectResponse
 from datetime import datetime, timedelta
-from jose import jwt
+import jwt
 import httpx
 import os
 

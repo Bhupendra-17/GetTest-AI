@@ -7,9 +7,16 @@ MAX_UPLOAD_SIZE = 5 * 1024 * 1024  # 10 MB
 class LimitUploadSizeMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next):
         content_length = request.headers.get("content-length")
-        if content_length and int(content_length) > MAX_UPLOAD_SIZE:
-            return JSONResponse(
-                {"detail": f"File too large. Max allowed size is {MAX_UPLOAD_SIZE // (1024 * 1024)} MB"},
-                status_code=413,
-            )
+        if content_length:
+            try:
+                if int(content_length) > MAX_UPLOAD_SIZE:
+                    return JSONResponse(
+                        {"detail": f"File too large. Max allowed size is {MAX_UPLOAD_SIZE // (1024 * 1024)} MB"},
+                        status_code=413,
+                    )
+            except (ValueError, TypeError):
+                return JSONResponse(
+                    {"detail": "Invalid Content-Length header"},
+                    status_code=400,
+                )
         return await call_next(request)
