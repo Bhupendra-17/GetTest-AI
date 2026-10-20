@@ -27,7 +27,7 @@ async def generate_questions(content: str, num_questions: int):
     }
 
     payload = {
-        "model": "mistralai/mistral-7b-instruct",
+        "model": "mistralai/mistral-nemo",
         "messages": [
             {"role": "system", "content": "You are a helpful assistant."},
             {"role": "user", "content": prompt}

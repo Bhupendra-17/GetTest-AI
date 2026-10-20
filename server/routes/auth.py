@@ -1,87 +1,207 @@
-from fastapi import APIRouter, HTTPException, Depends, Request, status
+from fastapi import APIRouter, HTTPException, Request, Header, status
 from models.user import User, UserLogin
-from passlib.context import CryptContext
-from utils.jwt_handler import create_access_token
+from utils.jwt_handler import create_access_token, decode_token
 from bson import ObjectId
 from datetime import datetime
+import bcrypt
+import pymongo.errors
+from typing import Optional
 
 router = APIRouter()
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 
-@router.post("/register")
-async def register_user(user: User, request: Request):
-    db = request.app.database
+def hash_password(password: str) -> str:
+    pwd_bytes = password.encode("utf-8")[:72]
+    salt = bcrypt.gensalt()
+    return bcrypt.hashpw(pwd_bytes, salt).decode("utf-8")
 
-    # ✅ Ensure unique email before inserting
-    existing = await db.users.find_one({"email": user.email})
-    if existing:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Email already registered."
-        )
 
-    # ✅ Hash password securely
-    hashed_password = pwd_context.hash(user.password)
+def verify_password(plain_password: str, hashed_password: str) -> bool:
+    try:
+        if not plain_password or not hashed_password:
+            return False
+        pwd_bytes = plain_password.encode("utf-8")[:72]
+        return bcrypt.checkpw(pwd_bytes, hashed_password.encode("utf-8"))
+    except Exception:
+        return False
 
-    # Convert to dict and store hashed password
-    user_dict = user.dict()
-    user_dict["password"] = hashed_password
-    user_dict["created_at"] = datetime.utcnow()  # optional but useful
-    user_dict["updated_at"] = datetime.utcnow()
 
-    # ✅ Insert user into DB
-    result = await db.users.insert_one(user_dict)
-    user_id = str(result.inserted_id)
-
-    # ✅ Generate JWT token
-    token = create_access_token({"sub": user.email, "user_id": user_id})
-
-    # ✅ Return consistent user info
+def build_user_response(user_id: str, doc: dict) -> dict:
+    name = doc.get("name", "").strip()
+    email = doc.get("email", "").strip().lower()
+    default_pic = f"https://ui-avatars.com/api/?name={name or 'User'}&background=fed7aa&color=c2410c&bold=true"
     return {
-        "access_token": token,
-        "token_type": "bearer",
-        "user": {
-            "_id": user_id,
-            "name": user.name,
-            "email": user.email,
-            "gender": user.gender,
-            "profilePic": user.profilePic,
-        },
+        "_id": str(user_id),
+        "name": name,
+        "email": email,
+        "gender": doc.get("gender") or "unspecified",
+        "profilePic": doc.get("profilePic") or default_pic,
     }
 
 
-@router.post("/login")
-async def login_user(user: UserLogin, request: Request):
+async def handle_register(user: User, request: Request):
     db = request.app.database
+    email = user.email.strip().lower()
+    name = user.name.strip()
 
-    # ✅ Find user by email
-    db_user = await db.users.find_one({"email": user.email})
+    if not name:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Name is required."
+        )
+
+    if not user.password or len(user.password) < 6:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Password must be at least 6 characters."
+        )
+
+    try:
+        existing = await db.users.find_one({"email": email})
+        if existing:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Email is already registered. Please sign in."
+            )
+
+        hashed_password = hash_password(user.password)
+
+        # Keep DB document simple and clean: only core essential fields
+        user_doc = {
+            "name": name,
+            "email": email,
+            "password": hashed_password,
+            "created_at": datetime.utcnow()
+        }
+
+        # Keep optional profile data only if explicitly provided
+        if user.gender:
+            user_doc["gender"] = user.gender
+        if user.profilePic:
+            user_doc["profilePic"] = user.profilePic
+
+        result = await db.users.insert_one(user_doc)
+        user_id = str(result.inserted_id)
+
+    except HTTPException:
+        raise
+    except pymongo.errors.PyMongoError as e:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail=f"Database service unavailable: {str(e)}"
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Registration failed: {str(e)}"
+        )
+
+    token = create_access_token({"sub": email, "user_id": user_id})
+
+    return {
+        "access_token": token,
+        "token_type": "bearer",
+        "user": build_user_response(user_id, user_doc),
+    }
+
+
+async def handle_login(user: UserLogin, request: Request):
+    db = request.app.database
+    email = user.email.strip().lower()
+
+    if not email or not user.password:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Email and password are required."
+        )
+
+    try:
+        db_user = await db.users.find_one({"email": email})
+    except pymongo.errors.PyMongoError as e:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail=f"Database service unavailable: {str(e)}"
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Login failed: {str(e)}"
+        )
+
     if not db_user:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid credentials"
+            detail="Invalid email or password."
         )
 
-    # ✅ Verify password
-    if not pwd_context.verify(user.password, db_user["password"]):
+    stored_password = db_user.get("password", "")
+    if not verify_password(user.password, stored_password):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid credentials"
+            detail="Invalid email or password."
         )
 
-    # ✅ Generate JWT token
-    token = create_access_token({"sub": db_user["email"], "user_id": str(db_user["_id"])})
+    user_id = str(db_user["_id"])
+    token = create_access_token({"sub": db_user["email"], "user_id": user_id})
 
-    # ✅ Return user info
     return {
         "access_token": token,
         "token_type": "bearer",
-        "user": {
-            "_id": str(db_user["_id"]),
-            "name": db_user.get("name", ""),
-            "email": db_user["email"],
-            "gender": db_user.get("gender", "male"),
-            "profilePic": db_user.get("profilePic", "https://cdn-icons-png.flaticon.com/512/236/236831.png"),
-        },
+        "user": build_user_response(user_id, db_user),
     }
+
+
+# Register routes (both /register and /auth/register for compatibility)
+@router.post("/register")
+@router.post("/auth/register")
+async def register_user(user: User, request: Request):
+    return await handle_register(user, request)
+
+
+# Login routes (both /login and /auth/login for compatibility)
+@router.post("/login")
+@router.post("/auth/login")
+async def login_user(user: UserLogin, request: Request):
+    return await handle_login(user, request)
+
+
+# Current user endpoint
+@router.get("/me")
+@router.get("/auth/me")
+async def get_current_user_profile(
+    request: Request,
+    authorization: Optional[str] = Header(None)
+):
+    if not authorization:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Authorization header missing"
+        )
+    try:
+        payload = decode_token(authorization)
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail=str(e)
+        )
+
+    user_id = payload.get("user_id")
+    if not user_id:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid token payload"
+        )
+
+    db = request.app.database
+    try:
+        user = await db.users.find_one({"_id": ObjectId(user_id)})
+    except Exception:
+        user = None
+
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="User not found"
+        )
+
+    return {"user": build_user_response(user_id, user)}

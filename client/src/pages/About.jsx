@@ -1,123 +1,141 @@
 import { motion } from "framer-motion";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
-import { FiSmile, FiClock, FiTarget, FiBookOpen } from "react-icons/fi";
+import { FiSmile, FiClock, FiTarget, FiBookOpen, FiZap, FiCpu, FiCheckCircle } from "react-icons/fi";
+import { Link } from "react-router-dom";
 
 const About = () => {
   return (
-    <div className="relative min-h-screen flex flex-col overflow-hidden">
-      {/* Animated Gradient Background */}
-      <motion.div
-        className="absolute inset-0 -z-10 bg-[linear-gradient(60deg,_rgb(247,_149,_51),_rgb(243,_112,_85),_rgb(239,_78,_123),_rgb(161,_102,_171),_rgb(80,_115,_184),_rgb(16,_152,_173),_rgb(7,_179,_155),_rgb(111,_186,_130))] bg-[length:400%_400%]"
-        animate={{ backgroundPosition: ["0% 50%", "100% 50%", "0% 50%"] }}
-        transition={{ duration: 20, ease: "linear", repeat: Infinity }}
-      />
+    <div className="relative min-h-screen flex flex-col bg-slate-50 text-slate-800 font-sans antialiased">
+      {/* Background Soft Glow */}
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-5xl h-80 bg-gradient-to-b from-orange-100/40 via-amber-50/20 to-transparent blur-3xl pointer-events-none -z-10" />
 
-      <div className="relative z-10 text-white flex flex-col min-h-screen">
-        <Navbar />
+      <Navbar />
 
+      <main className="flex-1 max-w-5xl mx-auto w-full px-4 sm:px-6 py-12">
         {/* Hero Section */}
-        <motion.section
-          initial={{ opacity: 0, y: -30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8 }}
-          className="text-center mt-20 mb-12 px-6"
-        >
-          <h1 className="text-4xl md:text-5xl font-bold mb-4">
-            About <span className="text-orange-400">GetTest AI</span>
+        <div className="text-center max-w-3xl mx-auto mb-16">
+          <span className="text-xs font-mono uppercase tracking-widest text-orange-600 font-bold px-3 py-1 rounded-full bg-orange-100/70 inline-block mb-3">
+            ABOUT GETTEST AI
+          </span>
+          <h1 className="text-3xl sm:text-5xl font-extrabold text-slate-900 tracking-tight">
+            Empowering Aspirants with <br />
+            <span className="bg-gradient-to-r from-orange-600 to-amber-600 bg-clip-text text-transparent">
+              Adaptive Intelligence
+            </span>
           </h1>
-          <p className="max-w-3xl mx-auto text-lg md:text-xl text-white/90">
-            From the late-night learners to the early-morning aspirants, we’re here to make
-            exam preparation smarter, faster, and way less stressful.
+          <p className="mt-4 text-base sm:text-lg text-slate-600 leading-relaxed">
+            From late-night study sessions to high-stakes competitive examinations, we’re on a mission to make test preparation adaptive, personalized, and stress-free.
           </p>
-        </motion.section>
+        </div>
 
         {/* Story Section */}
-        <motion.section
-          initial={{ opacity: 0, y: 50 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 1 }}
-          className="bg-white text-gray-800 rounded-2xl shadow-xl max-w-5xl mx-auto mb-12 p-10"
-        >
-          <h2 className="text-3xl font-semibold mb-6 text-center">
-            Born from Struggle, Built for Aspirants
-          </h2>
-          <p className="text-gray-600 leading-relaxed text-lg mb-4">
-            Remember those endless nights of flipping through PDFs, making notes, and
-            wondering — *“Where do I even start revising?”* Yeah, we’ve been there too.
-          </p>
-          <p className="text-gray-600 leading-relaxed text-lg mb-4">
-            Most learners spend hours searching for the right mock tests — only to find ones
-            that don’t match their syllabus, skill level, or time. That’s when the idea for
-            <span className="font-semibold text-orange-600"> GetTest AI </span>
-            was born — a tool that lets you turn your own materials into personalized tests
-            in seconds.
-          </p>
-          <p className="text-gray-600 leading-relaxed text-lg">
-            Whether you’re preparing for a competitive exam, interview, or skill upgrade,
-            our AI ensures your preparation adapts *to you*, not the other way around.
-          </p>
-        </motion.section>
+        <section className="bg-white rounded-3xl border border-slate-200/90 p-8 sm:p-12 shadow-xs mb-12">
+          <div className="max-w-3xl mx-auto space-y-5 text-slate-600 leading-relaxed text-sm sm:text-base">
+            <h2 className="text-2xl font-bold text-slate-900 text-center mb-6">
+              Born from Struggle, Built for Learners
+            </h2>
+            <p>
+              Remember those exhausting nights before exams? Flipping through hundreds of textbook pages, endless PDFs, and wondering: <em className="text-slate-800">"Where do I even start testing myself?"</em> We’ve been there.
+            </p>
+            <p>
+              Most students waste hours searching for relevant practice questions online — only to discover outdated question banks that don’t align with their actual syllabus, difficulty level, or time constraints.
+            </p>
+            <p>
+              That inspired <strong className="text-orange-600">GetTest AI</strong>: a platform where any learner can upload their study notes or choose their target competitive examination to instantly generate tailored, timed mock tests with comprehensive item-level explanations.
+            </p>
+          </div>
+        </section>
 
-        {/* Mission & Vision Section */}
-        <motion.section
-          initial={{ opacity: 0, y: 50 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 1 }}
-          className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-6 px-6 md:px-12 mb-16"
-        >
+        {/* Pillars / Values Grid */}
+        <section className="grid sm:grid-cols-3 gap-6 mb-16">
           {[
             {
-              icon: <FiBookOpen size={40} className="text-orange-500" />,
+              icon: <FiBookOpen className="text-orange-500 text-2xl" />,
               title: "Our Mission",
-              desc: "To make exam preparation accessible and AI-driven — transforming every study material into a smart test experience.",
+              desc: "Democratize high-quality assessment technology by turning any learning material into active recall tests.",
             },
             {
-              icon: <FiTarget size={40} className="text-orange-500" />,
+              icon: <FiTarget className="text-amber-500 text-2xl" />,
               title: "Our Vision",
-              desc: "To empower every learner, from small towns to big cities, with the confidence to test, learn, and improve effortlessly.",
+              desc: "Help millions of students bridge the gap between passive reading and active exam mastery.",
             },
             {
-              icon: <FiClock size={40} className="text-orange-500" />,
+              icon: <FiClock className="text-indigo-500 text-2xl" />,
               title: "Our Promise",
-              desc: "No more wasted time. No more outdated mocks. Just personalized learning that evolves with your journey.",
+              desc: "No repetitive, irrelevant questions. Strictly context-aware questions calibrated to your chosen parameters.",
             },
           ].map((item, i) => (
-            <motion.div
+            <div
               key={i}
-              whileHover={{ scale: 1.05 }}
-              className="p-8 bg-gradient-to-r from-yellow-50 to-orange-100 border-l-4 border-orange-400 rounded-2xl shadow-md hover:shadow-2xl transition"
+              className="bg-white rounded-2xl p-6 border border-slate-200/90 shadow-xs hover:shadow-md transition"
             >
-              <div className="mb-3 flex justify-center">{item.icon}</div>
-              <h3 className="font-bold text-xl mb-2 text-center text-gray-900">{item.title}</h3>
-              <p className="text-gray-600 text-center">{item.desc}</p>
-            </motion.div>
+              <div className="p-3 w-fit rounded-xl bg-slate-50 border border-slate-100 mb-4">
+                {item.icon}
+              </div>
+              <h3 className="font-bold text-base text-slate-900 mb-2">{item.title}</h3>
+              <p className="text-xs sm:text-sm text-slate-500 leading-relaxed">{item.desc}</p>
+            </div>
           ))}
-        </motion.section>
+        </section>
 
-        {/* Fun Section */}
-        <motion.section
-          initial={{ opacity: 0, y: 50 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 1 }}
-          className="bg-white text-gray-800 rounded-2xl shadow-xl max-w-5xl mx-auto mb-12 p-10 text-center"
-        >
-          <FiSmile size={50} className="text-orange-500 mx-auto mb-4" />
-          <h2 className="text-3xl font-semibold mb-4">We Get It — Preparation Is Hard!</h2>
-          <p className="text-gray-600 text-lg mb-4">
-            You’ve got deadlines, distractions, and a syllabus that seems never-ending. But
-            that’s exactly why we built this — to make every test feel like a win, not a
-            headache.
-          </p>
-          <p className="text-gray-600 text-lg">
-            GetTest AI helps you study smarter by creating mock tests that actually fit your
-            learning style. So whether you’re stuck on a bus or burning the midnight oil,
-            your next test is just a click away.
-          </p>
-        </motion.section>
+        {/* Technical Architecture Overview */}
+        <section className="bg-white rounded-3xl border border-slate-200/90 p-8 sm:p-10 shadow-xs mb-12">
+          <div className="flex items-center gap-3 mb-6">
+            <div className="p-2.5 rounded-xl bg-orange-100 text-orange-600">
+              <FiCpu className="text-xl" />
+            </div>
+            <div>
+              <h3 className="text-xl font-bold text-slate-900">The Technology Behind GetTest AI</h3>
+              <p className="text-xs text-slate-500">Fast, resilient microservices architecture</p>
+            </div>
+          </div>
 
-        <Footer />
-      </div>
+          <div className="grid sm:grid-cols-2 gap-4 text-xs sm:text-sm text-slate-600">
+            <div className="p-4 rounded-xl bg-slate-50 border border-slate-200/70 space-y-1">
+              <span className="font-bold text-slate-900 block">FastAPI Backend</span>
+              <p className="text-slate-500 text-xs">
+                High-performance Python asynchronous server managing PDF parsing with PyPDF2 and session states.
+              </p>
+            </div>
+            <div className="p-4 rounded-xl bg-slate-50 border border-slate-200/70 space-y-1">
+              <span className="font-bold text-slate-900 block">Mistral AI Ingestion</span>
+              <p className="text-slate-500 text-xs">
+                Advanced language model extracting key terms, distractors, and valid answer rationales.
+              </p>
+            </div>
+            <div className="p-4 rounded-xl bg-slate-50 border border-slate-200/70 space-y-1">
+              <span className="font-bold text-slate-900 block">Interactive Test Engine</span>
+              <p className="text-slate-500 text-xs">
+                Per-question timing tracking, review bookmarking, and instant countdown timers.
+              </p>
+            </div>
+            <div className="p-4 rounded-xl bg-slate-50 border border-slate-200/70 space-y-1">
+              <span className="font-bold text-slate-900 block">Diagnostic Scorecards</span>
+              <p className="text-slate-500 text-xs">
+                Recharts visual breakdown of accuracy distributions, unattempted questions, and historic scores.
+              </p>
+            </div>
+          </div>
+        </section>
+
+        {/* CTA Banner */}
+        <div className="bg-gradient-to-r from-orange-500 to-amber-500 rounded-3xl p-8 sm:p-10 text-white text-center shadow-lg">
+          <h3 className="text-2xl font-bold mb-2">Start Practicing in Seconds</h3>
+          <p className="text-white/90 text-xs sm:text-sm max-w-xl mx-auto mb-6">
+            Test yourself on your own notes or practice standardized bank and competitive exam questions.
+          </p>
+          <Link
+            to="/main"
+            className="inline-flex items-center gap-2 px-7 py-3 rounded-full bg-white text-orange-600 font-bold text-xs uppercase tracking-wider hover:bg-orange-50 transition shadow-sm"
+          >
+            <span>Create Free Test</span>
+            <FiZap />
+          </Link>
+        </div>
+      </main>
+
+      <Footer />
     </div>
   );
 };

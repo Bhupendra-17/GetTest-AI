@@ -84,14 +84,19 @@ const Profile = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-tr from-orange-100 via-pink-100 to-blue-100">
+    <div className="min-h-screen bg-slate-50 text-slate-800 flex flex-col font-sans antialiased">
+      {/* Background Soft Glow */}
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-5xl h-80 bg-gradient-to-b from-orange-100/40 via-amber-50/20 to-transparent blur-3xl pointer-events-none -z-10" />
+
       <Navbar />
-      <div className="max-w-5xl mx-auto mt-10 p-8 bg-white rounded-2xl shadow-xl">
-        <ProfileHeader
-          {...{ formData, editMode, setEditMode, setFormData, handleSave, getProfilePicByGender, message }}
-        />
-        <ProfileStats {...{ testHistory, bestScore, averageScore }} />
-        <ProfileHistory {...{ testHistory, navigate }} />
+      <div className="flex-1 max-w-5xl mx-auto w-full px-4 sm:px-6 py-10">
+        <div className="p-6 sm:p-10 bg-white border border-slate-200/90 rounded-3xl shadow-sm">
+          <ProfileHeader
+            {...{ formData, editMode, setEditMode, setFormData, handleSave, getProfilePicByGender, message }}
+          />
+          <ProfileStats {...{ testHistory, bestScore, averageScore }} />
+          <ProfileHistory {...{ testHistory, navigate }} />
+        </div>
       </div>
       <Footer />
     </div>

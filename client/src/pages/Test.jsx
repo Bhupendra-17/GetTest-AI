@@ -147,8 +147,8 @@ const Test = () => {
                 whileTap={{ scale: 0.99 }}
                 onClick={() => handleOptionSelect(currentIndex, option)}
                 className={`block w-full text-left px-4 py-3 rounded-xl border transition font-medium ${answers[currentIndex] === option
-                    ? "bg-gradient-to-b from-green-600 to-green-400 text-white border-transparent shadow-lg"
-                    : "bg-white/70 hover:bg-white border-gray-300 text-gray-700"
+                  ? "bg-gradient-to-b from-green-600 to-green-400 text-white border-transparent shadow-lg"
+                  : "bg-white/70 hover:bg-white border-gray-300 text-gray-700"
                   }`}
               >
                 {option}
@@ -210,10 +210,10 @@ const Test = () => {
                   key={index}
                   onClick={() => setCurrentIndex(index)}
                   className={`rounded-full px-3 py-2 text-sm font-semibold transition ${answers[index]
-                      ? "bg-green-500 text-white"
-                      : markedForReview[index]
-                        ? "bg-yellow-400 text-white"
-                        : "bg-gray-300 text-gray-800"
+                    ? "bg-green-500 text-white"
+                    : markedForReview[index]
+                      ? "bg-yellow-400 text-white"
+                      : "bg-gray-300 text-gray-800"
                     } ${currentIndex === index ? "ring-2 ring-orange-400" : ""}`}
                 >
                   {index + 1}

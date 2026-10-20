@@ -1,15 +1,16 @@
-from pydantic import BaseModel, EmailStr, Field
-from typing import List, Optional
-from datetime import datetime
+from pydantic import BaseModel, EmailStr
+from typing import Optional
 
 
 class User(BaseModel):
     name: str
     email: EmailStr
     password: str
-    gender: Optional[str] = "male"
-    profilePic: Optional[str] = "https://cdn-icons-png.flaticon.com/512/236/236831.png"
+    gender: Optional[str] = None
+    profilePic: Optional[str] = None
+
 
 class UserLogin(BaseModel):
     email: EmailStr
     password: str
+

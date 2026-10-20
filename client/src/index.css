@@ -1,4 +1,13 @@
 @import "tailwindcss";
+
+:root {
+  font-family: 'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+}
+
+.font-mono {
+  font-family: 'JetBrains Mono', monospace;
+}
+
 .no-scrollbar::-webkit-scrollbar {
   display: none;
 }
@@ -6,101 +15,19 @@
   -ms-overflow-style: none;
   scrollbar-width: none;
 }
-.container {
-  position: absolute;
-  position: fixed;
-  width: 100%;
-  height: 100%;
-  z-index: 60;
+
+/* Custom smooth glass backdrop */
+.glass-panel {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
 }
 
-.container2 {
-  position: absolute;
-  position: fixed;
-  width: 100%;
-  height: 100%;
-  z-index: 60;
+/* Subtle glow utility */
+.soft-glow-orange {
+  box-shadow: 0 10px 30px -10px rgba(249, 115, 22, 0.25);
 }
 
-.square {
-  position: absolute;
-  width: 30px;
-  height: 30px;
-  background-color: #3498db;
-  opacity: 0;
-  animation: moveUp 5s infinite;
-}
-.squares {
-  position: absolute;
-  width: 20px;
-  height: 20px;
-  background-color: #3498db;
-  opacity: 0;
-  animation: moveUp 5s infinite;
-}
-
-.square:nth-child(1) {
-  left: 10%;
-  animation-delay: 0s;
-}
-
-.square:nth-child(2) {
-  left: 30%;
-  animation-delay: 1s;
-}
-
-.square:nth-child(3) {
-  left: 40%;
-  animation-delay: 2s;
-}
-
-.square:nth-child(4) {
-  left: 70%;
-  animation-delay: 3s;
-}
-
-.square:nth-child(5) {
-  left: 90%;
-  animation-delay: 4s;
-}
-
-.squares:nth-child(1) {
-  left: 17%;
-  animation-delay: 0s;
-}
-
-.squares:nth-child(2) {
-  left: 39%;
-  animation-delay: 1s;
-}
-
-.squares:nth-child(3) {
-  left: 48%;
-  animation-delay: 2s;
-}
-
-.squares:nth-child(4) {
-  left: 60%;
-  animation-delay: 3s;
-}
-
-.squares:nth-child(5) {
-  left: 80%;
-  animation-delay: 4s;
-}
-
-@keyframes moveUp {
-  0% {
-    transform: translateY(100px) rotate(0deg);
-    opacity: 1;
-  }
-
-  50% {
-    opacity: 1;
-  }
-
-  100% {
-    transform: translateY(-120px) rotate(360deg);
-    opacity: 0;
-  }
-}
+.soft-glow-indigo {
+  box-shadow: 0 10px 30px -10px rgba(99, 102, 241, 0.25);
+}

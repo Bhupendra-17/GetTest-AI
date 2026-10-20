@@ -2,6 +2,11 @@ from pydantic import BaseModel, EmailStr, Field
 from typing import List, Optional
 from datetime import datetime
 
+class SectionalRequest(BaseModel):
+    role: str
+    subject: str
+    num_questions: int = 10
+
 class QuestionAnswer(BaseModel):
     text: str
     options: List[str]

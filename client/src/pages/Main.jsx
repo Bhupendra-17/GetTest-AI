@@ -1,45 +1,45 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { motion } from "framer-motion";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import TestCreationSteps from "../components/TestCreationSteps";
-import { FiCpu, FiBookOpen, FiUserCheck } from "react-icons/fi";
+import { FiCpu, FiBookOpen, FiUserCheck, FiTarget, FiZap } from "react-icons/fi";
 
 const Main = () => {
   const [file, setFile] = useState(null);
-  const [numQuestions, setNumQuestions] = useState("");
+  const [numQuestions, setNumQuestions] = useState("10");
+  const [timeLimit, setTimeLimit] = useState("15");
   const [loading, setLoading] = useState(false);
-  const [role, setRole] = useState("");
-  const [subject, setSubject] = useState("");
+  const [role, setRole] = useState("Bank PO");
+  const [subject, setSubject] = useState("Logical Reasoning");
   const [mode, setMode] = useState("pdf");
-  const [step, setStep] = useState(1);
-  const [timeLimit, setTimeLimit] = useState("");
+  const [error, setError] = useState("");
+
   const backendUrl = import.meta.env.VITE_BACKEND_URL;
   const navigate = useNavigate();
-  const token = localStorage.getItem("token");
 
   const handleFileUpload = (e) => {
     const uploadedFile = e.target.files[0];
     if (!uploadedFile) return;
 
-    const sizeMB = uploadedFile.size / (1024 * 1024); // convert to MB
-
+    const sizeMB = uploadedFile.size / (1024 * 1024);
     if (sizeMB > 5) {
       alert(`File too large (${sizeMB.toFixed(2)} MB). Max allowed is 5 MB.`);
-      e.target.value = ""; // reset file input
+      e.target.value = "";
       setFile(null);
       return;
     }
+    setError("");
     setFile(uploadedFile);
   };
 
   const handleGenerateFromRole = async () => {
     if (!role || !subject || !numQuestions || !timeLimit) {
-      alert("Please select role, subject and question count.");
+      alert("Please select role, subject, question count, and duration.");
       return;
     }
     setLoading(true);
+    setError("");
     try {
       const res = await fetch(`${backendUrl}/generate_sectional/`, {
         method: "POST",
@@ -50,169 +50,183 @@ const Main = () => {
           num_questions: parseInt(numQuestions),
         }),
       });
+
+      if (!res.ok) {
+        throw new Error(`Failed to generate sectional test (${res.status})`);
+      }
+
       const data = await res.json();
-      navigate("/test", { state: { questions: data.questions, timeLimit: Number(timeLimit) } });
+      navigate("/test", {
+        state: {
+          questions: data.questions,
+          timeLimit: Number(timeLimit),
+        },
+      });
     } catch (err) {
       console.error(err);
-      alert("Error generating test.");
+      setError("Unable to generate sectional test. Please verify server connection.");
     } finally {
       setLoading(false);
     }
   };
-  
+
   const handleGenerateTest = async () => {
     if (!file || !numQuestions || !timeLimit) {
-      alert("Please provide all inputs ");
+      alert("Please upload a PDF file and set question count & time limit.");
       return;
     }
     setLoading(true);
+    setError("");
     const formData = new FormData();
     formData.append("file", file);
     formData.append("num_questions", numQuestions);
+
     try {
       const res = await fetch(`${backendUrl}/generate_test/`, {
         method: "POST",
         body: formData,
       });
+
+      if (!res.ok) {
+        throw new Error(`Failed to generate test from PDF (${res.status})`);
+      }
+
       const data = await res.json();
-      navigate("/test", { state: { questions: data.questions } });
+      navigate("/test", {
+        state: {
+          questions: data.questions,
+          timeLimit: Number(timeLimit),
+        },
+      });
     } catch (err) {
       console.error(err);
-      alert("Error generating test.");
+      setError("Failed to generate test from PDF. Please check file format and try again.");
     } finally {
       setLoading(false);
     }
   };
 
+  const handleGenerate = () => {
+    if (mode === "pdf") {
+      handleGenerateTest();
+    } else {
+      handleGenerateFromRole();
+    }
+  };
+
   return (
-    <div className="relative min-h-screen flex flex-col overflow-hidden">
-      {/* Animated Gradient Background */}
-      <motion.div
-        className="absolute inset-0 -z-10 bg-[linear-gradient(60deg,_rgb(247,_149,_51),_rgb(243,_112,_85),_rgb(239,_78,_123),_rgb(161,_102,_171),_rgb(80,_115,_184),_rgb(16,_152,_173),_rgb(7,_179,_155),_rgb(111,_186,_130))] bg-[length:400%_400%]"
-        animate={{ backgroundPosition: ["0% 50%", "100% 50%", "0% 50%"] }}
-        transition={{ duration: 20, ease: "linear", repeat: Infinity }}
-      />
+    <div className="relative min-h-screen flex flex-col bg-slate-50 text-slate-800 font-sans antialiased">
+      {/* Background soft aura */}
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-5xl h-72 bg-gradient-to-b from-orange-100/40 via-amber-50/20 to-transparent blur-3xl pointer-events-none -z-10" />
 
-      <div className="relative z-10 text-white flex flex-col min-h-screen">
-        <Navbar />
-
-        {/* Header */}
-        <motion.div
-          initial={{ opacity: 0, y: -30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8 }}
-          className="text-center mt-16 mb-8"
-        >
-          <h1 className="text-4xl md:text-5xl font-bold">
-            Create Your AI-Powered Mock Tests
-          </h1>
-          <p className="text-lg md:text-xl text-white/80 mt-3">
-            Choose your mode below and start preparing smarter, faster, and better.
-          </p>
-        </motion.div>
-
-        {/* Mode Toggle */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.5 }}
-          className="flex justify-center mb-8"
-        >
-          <div className="bg-white/20 backdrop-blur-md rounded-2xl overflow-hidden flex border border-white/30">
-            <button
-              onClick={() => setMode("pdf")}
-              className={`px-6 py-3 flex items-center gap-2 text-lg font-semibold transition-all duration-300 ${mode === "pdf"
-                ? "bg-gradient-to-r from-orange-500 to-red-500 text-white shadow-lg"
-                : "text-white/80 hover:text-white"
-                }`}
-            >
-              <FiCpu /> From PDF
-            </button>
-            <button
-              onClick={() => setMode("role")}
-              className={`px-6 py-3 flex items-center gap-2 text-lg font-semibold transition-all duration-300 ${mode === "role"
-                ? "bg-gradient-to-r from-orange-500 to-red-500 text-white shadow-lg"
-                : "text-white/80 hover:text-white"
-                }`}
-            >
-              <FiBookOpen /> Sectional
-            </button>
+      {/* Full-screen generation loader */}
+      {loading && (
+        <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-white/80 backdrop-blur-md">
+          <div className="flex flex-col items-center gap-5 text-center max-w-xs">
+            {/* Animated spinner ring */}
+            <div className="relative w-16 h-16">
+              <div className="absolute inset-0 rounded-full border-4 border-orange-100" />
+              <div className="absolute inset-0 rounded-full border-4 border-orange-500 border-t-transparent animate-spin" />
+              <div className="absolute inset-2 rounded-full border-4 border-amber-400 border-b-transparent animate-spin" style={{ animationDuration: "0.6s", animationDirection: "reverse" }} />
+            </div>
+            <div>
+              <p className="text-base font-extrabold text-slate-900 tracking-tight">Synthesizing Questions</p>
+              <p className="text-xs text-slate-500 mt-1 font-mono">AI is crafting your mock test&hellip;</p>
+            </div>
+            {/* Animated dots */}
+            <div className="flex gap-1.5">
+              {[0, 1, 2].map((i) => (
+                <span
+                  key={i}
+                  className="w-2 h-2 rounded-full bg-orange-400 animate-bounce"
+                  style={{ animationDelay: `${i * 0.15}s` }}
+                />
+              ))}
+            </div>
           </div>
-        </motion.div>
+        </div>
+      )}
 
-        {/* Test Creation Steps */}
-        <motion.div
-          initial={{ opacity: 0, y: 40 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8 }}
-          className="flex-grow px-6 md:px-10 pb-16"
-        >
-          <TestCreationSteps
-            mode={mode}
-            file={file}
-            numQuestions={numQuestions}
-            role={role}
-            subject={subject}
-            loading={loading}
-            handleFileUpload={handleFileUpload}
-            handleGenerateTest={handleGenerateTest}
-            handleGenerateFromRole={handleGenerateFromRole}
-            setNumQuestions={setNumQuestions}
-            setRole={setRole}
-            setSubject={setSubject}
-            timeLimit={timeLimit}
-            setTimeLimit={setTimeLimit}
-          />
-        </motion.div>
+      <Navbar />
 
-        {/* Motivation Section */}
-        <motion.section
-          initial={{ opacity: 0, y: 40 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 1 }}
-          className="bg-white text-gray-800 rounded-2xl shadow-xl max-w-5xl mx-auto mb-12 p-10 text-center"
-        >
-          <h2 className="text-3xl font-semibold mb-6">
-            Master Every Topic with <span className="text-orange-500">AI Precision</span>
+      <main className="flex-1 max-w-5xl mx-auto w-full px-4 sm:px-6 py-10">
+        {/* Header */}
+        <div className="text-center max-w-2xl mx-auto mb-10">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-orange-100/80 text-orange-800 text-xs font-semibold mb-3">
+            <FiZap /> Mock Test Generator
+          </div>
+          <h1 className="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">
+            Create Your Custom AI Mock Test
+          </h1>
+          <p className="text-sm sm:text-base text-slate-500 mt-2">
+            Configure your parameters below to generate a tailored examination session in seconds.
+          </p>
+        </div>
+
+        {/* Test Creation Step Component */}
+        <TestCreationSteps
+          mode={mode}
+          setMode={setMode}
+          file={file}
+          setFile={setFile}
+          handleFileUpload={handleFileUpload}
+          numQuestions={numQuestions}
+          setNumQuestions={setNumQuestions}
+          role={role}
+          setRole={setRole}
+          subject={subject}
+          setSubject={setSubject}
+          timeLimit={timeLimit}
+          setTimeLimit={setTimeLimit}
+          loading={loading}
+          onGenerate={handleGenerate}
+          error={error}
+        />
+
+        {/* Motivation / Value Grid */}
+        <section className="mt-16 bg-white border border-slate-200/90 rounded-3xl p-8 sm:p-10 shadow-xs text-center">
+          <h2 className="text-2xl font-bold text-slate-900 mb-2">
+            Master Topics with <span className="text-orange-600">AI Precision</span>
           </h2>
-          <p className="max-w-2xl mx-auto text-gray-600 mb-8">
-            Whether you’re preparing for government exams, interviews, or skill assessments,
-            GetTest AI adapts to your needs and makes preparation effortless and effective.
+          <p className="max-w-2xl mx-auto text-xs sm:text-sm text-slate-500 mb-8 leading-relaxed">
+            Whether preparing for government examinations, placement interviews, or university assessments,
+            GetTest AI adapts to your curriculum and sharpens conceptual retention.
           </p>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-left">
             {[
               {
-                icon: <FiUserCheck size={40} className="text-orange-500" />,
-                title: "Smart Personalization",
-                desc: "Your test evolves with your performance — focusing on weak areas automatically.",
+                icon: <FiUserCheck className="text-orange-500 text-2xl" />,
+                title: "Adaptive Questioning",
+                desc: "Questions synthesize core principles and formulas directly from source texts.",
               },
               {
-                icon: <FiCpu size={40} className="text-orange-500" />,
-                title: "Instant Generation",
-                desc: "Upload, choose, and get your tailored test ready within seconds.",
+                icon: <FiCpu className="text-amber-500 text-2xl" />,
+                title: "Fast Mistral Pipeline",
+                desc: "High-throughput inference generates complete question papers in seconds.",
               },
               {
-                icon: <FiBookOpen size={40} className="text-orange-500" />,
-                title: "Adaptive Difficulty",
-                desc: "Questions dynamically adjust in complexity for the best learning curve.",
+                icon: <FiTarget className="text-indigo-500 text-2xl" />,
+                title: "Item Diagnostics",
+                desc: "Analyze time distribution and accuracy per question after test completion.",
               },
-            ].map((feature, i) => (
-              <motion.div
+            ].map((f, i) => (
+              <div
                 key={i}
-                whileHover={{ scale: 1.05 }}
-                className="p-6 bg-gradient-to-r from-yellow-50 to-orange-100 border-l-4 border-orange-400 rounded-2xl shadow-md hover:shadow-2xl transition"
+                className="p-5 rounded-2xl bg-slate-50 border border-slate-200/80 hover:border-orange-200 transition"
               >
-                <div className="mb-3 flex justify-center">{feature.icon}</div>
-                <h3 className="font-bold text-lg mb-2">{feature.title}</h3>
-                <p className="text-gray-600 text-sm">{feature.desc}</p>
-              </motion.div>
+                <div className="p-3 w-fit rounded-xl bg-white border border-slate-200 mb-3 shadow-xs">
+                  {f.icon}
+                </div>
+                <h3 className="font-bold text-sm text-slate-800 mb-1">{f.title}</h3>
+                <p className="text-xs text-slate-500 leading-relaxed">{f.desc}</p>
+              </div>
             ))}
           </div>
-        </motion.section>
+        </section>
+      </main>
 
-        <Footer />
-      </div>
+      <Footer />
     </div>
   );
 };
