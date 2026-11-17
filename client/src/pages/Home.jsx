@@ -480,7 +480,7 @@ const Home = () => {
           <div className="bg-white rounded-3xl border border-slate-200 p-8 shadow-sm grid md:grid-cols-2 gap-8 items-center">
             <div className="space-y-4">
               <span className="text-xs font-mono font-bold text-orange-600 uppercase tracking-wider">
-                MODE 01 // CUSTOM MATERIAL
+                MODE 01. CUSTOM MATERIAL
               </span>
               <h3 className="text-2xl font-bold text-slate-900">
                 Turn Lecture PDFs & Notes into Tests
@@ -522,7 +522,7 @@ const Home = () => {
           <div className="bg-white rounded-3xl border border-slate-200 p-8 shadow-sm grid md:grid-cols-2 gap-8 items-center">
             <div className="space-y-4">
               <span className="text-xs font-mono font-bold text-indigo-600 uppercase tracking-wider">
-                MODE 02 // SECTIONAL DOMAINS
+                MODE 02. SECTIONAL DOMAINS
               </span>
               <h3 className="text-2xl font-bold text-slate-900">
                 Standardized Exam Drills & Sections
