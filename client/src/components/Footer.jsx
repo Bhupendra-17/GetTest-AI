@@ -23,7 +23,7 @@ const Footer = () => {
               >
                 <FaEnvelope />
               </a>
-              <a
+              {/* <a
                 href="https://www.linkedin.com/in/bhupendra-dewangan-172-rahul"
                 target="_blank"
                 rel="noreferrer"
@@ -31,7 +31,7 @@ const Footer = () => {
                 aria-label="LinkedIn"
               >
                 <FaLinkedin />
-              </a>
+              </a> */}
               <a
                 href="https://github.com/Bhupendra-17/GetTest-AI"
                 target="_blank"
@@ -116,4 +116,4 @@ const Footer = () => {
   );
 };
 
-export default Footer;
+export default Footer;

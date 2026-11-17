@@ -99,7 +99,7 @@ const About = () => {
               </p>
             </div>
             <div className="p-4 rounded-xl bg-slate-50 border border-slate-200/70 space-y-1">
-              <span className="font-bold text-slate-900 block">Mistral AI Ingestion</span>
+              <span className="font-bold text-slate-900 block">Our AI Ingestion</span>
               <p className="text-slate-500 text-xs">
                 Advanced language model extracting key terms, distractors, and valid answer rationales.
               </p>

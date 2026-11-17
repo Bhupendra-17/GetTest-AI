@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { motion, AnimatePresence } from "framer-motion";
-import { FiClock, FiArrowLeft, FiArrowRight, FiCheckCircle, FiAlertCircle } from "react-icons/fi";
+import { motion } from "framer-motion";
+import { FiClock, FiArrowLeft, FiArrowRight } from "react-icons/fi";
 
 const Test = () => {
   const location = useLocation();
@@ -9,34 +9,37 @@ const Test = () => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [answers, setAnswers] = useState({});
   const [markedForReview, setMarkedForReview] = useState({});
+  const [isConfirmOpen, setIsConfirmOpen] = useState(false);
   const { questions = [], timeLimit = 60 } = location.state || {};
   const [timeLeft, setTimeLeft] = useState(timeLimit * 60);
+  const timeLeftRef = useRef(timeLimit * 60);
   const [questionTimers, setQuestionTimers] = useState(() =>
     questions.map(() => 0)
   );
+  const questionTimersRef = useRef(questions.map(() => 0));
+  const isSubmittingRef = useRef(false);
+  const submitRef = useRef(() => {});
 
   const currentQuestion = questions[currentIndex];
 
   useEffect(() => {
-    const interval = setInterval(() => {
-      setTimeLeft((prev) => {
-        if (prev <= 1) {
-          clearInterval(interval);
-          handleSubmit();
-          return 0;
-        }
-        return prev - 1;
-      });
+    if (!questions.length || isSubmittingRef.current) return undefined;
 
-      setQuestionTimers((prev) => {
-        const updated = [...prev];
-        updated[currentIndex] += 1;
-        return updated;
-      });
+    const interval = setInterval(() => {
+      const nextTimeLeft = Math.max(timeLeftRef.current - 1, 0);
+      timeLeftRef.current = nextTimeLeft;
+      setTimeLeft(nextTimeLeft);
+
+      const nextQuestionTimers = [...questionTimersRef.current];
+      nextQuestionTimers[currentIndex] = (nextQuestionTimers[currentIndex] || 0) + 1;
+      questionTimersRef.current = nextQuestionTimers;
+      setQuestionTimers(nextQuestionTimers);
+
+      if (nextTimeLeft === 0) submitRef.current();
     }, 1000);
 
     return () => clearInterval(interval);
-  }, [currentIndex]);
+  }, [currentIndex, questions.length]);
 
   const handleOptionSelect = (index, option) => {
     setAnswers({ ...answers, [index]: option });
@@ -53,14 +56,27 @@ const Test = () => {
   };
 
   const handleSubmit = () => {
+    if (isSubmittingRef.current) return;
+    isSubmittingRef.current = true;
     navigate("/score", {
-      state: { questions, answers, timeTaken: 3600 - timeLeft, questionTimers },
+      state: {
+        questions,
+        answers,
+        timeTaken: timeLimit * 60 - timeLeftRef.current,
+        questionTimers: questionTimersRef.current,
+      },
     });
   };
+
+  submitRef.current = handleSubmit;
+
+  const handleRequestSubmit = () => setIsConfirmOpen(true);
 
   const handleNextQuestion = () => {
     if (currentIndex < questions.length - 1) {
       setCurrentIndex(currentIndex + 1);
+    } else {
+      handleRequestSubmit();
     }
   };
 
@@ -104,7 +120,7 @@ const Test = () => {
             <span>Time Left: {formatTime(timeLeft)}</span>
           </div>
           <button
-            onClick={handleSubmit}
+            onClick={handleRequestSubmit}
             className="bg-gradient-to-r from-orange-500 to-red-500 text-white px-6 py-2 rounded-lg font-semibold hover:shadow-lg hover:scale-105 transition"
           >
             Submit Test
@@ -204,12 +220,13 @@ const Test = () => {
             <h3 className="font-bold text-lg mb-4 text-center text-gray-800">
               Question Navigator
             </h3>
-            <div className="grid grid-cols-5 md:grid-cols-6 gap-2 mb-6">
+            <div className="grid grid-cols-5 gap-2 mb-6">
               {questions.map((_, index) => (
                 <button
                   key={index}
                   onClick={() => setCurrentIndex(index)}
-                  className={`rounded-full px-3 py-2 text-sm font-semibold transition ${answers[index]
+                  aria-label={`Go to question ${index + 1}${answers[index] ? ", answered" : ""}${markedForReview[index] ? ", marked for review" : ""}`}
+                  className={`aspect-square w-full min-w-0 flex items-center justify-center rounded-xl p-0 text-sm tabular-nums font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-500 ${answers[index]
                     ? "bg-green-500 text-white"
                     : markedForReview[index]
                       ? "bg-yellow-400 text-white"
@@ -243,6 +260,48 @@ const Test = () => {
           </div>
         </motion.div>
       </div>
+
+      {isConfirmOpen && (
+        <div
+          role="presentation"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/50 px-4 backdrop-blur-sm"
+          onClick={() => setIsConfirmOpen(false)}
+        >
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="submit-confirmation-title"
+            className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <h2 id="submit-confirmation-title" className="text-xl font-bold text-slate-900">
+              Submit this test?
+            </h2>
+            <p className="mt-2 text-sm leading-relaxed text-slate-600">
+              {answered < total
+                ? `You have ${total - answered} unanswered question${total - answered === 1 ? "" : "s"}. `
+                : "You have answered every question. "}
+              Your answers will be final after submission.
+            </p>
+            <div className="mt-6 flex justify-end gap-3">
+              <button
+                type="button"
+                onClick={() => setIsConfirmOpen(false)}
+                className="rounded-lg border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handleSubmit}
+                className="rounded-lg bg-orange-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-orange-700"
+              >
+                Confirm submit
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

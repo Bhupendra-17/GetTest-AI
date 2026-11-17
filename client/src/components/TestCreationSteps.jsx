@@ -108,7 +108,7 @@ export default function TestCreationSteps({
                   Click or drag your PDF lecture notes or textbook here
                 </p>
                 <p className="text-xs text-slate-500 mt-1">
-                  Mistral AI will extract key concepts and formulate balanced MCQs
+                  Our AI will extract key concepts and formulate balanced MCQs
                 </p>
               </div>
             ) : (

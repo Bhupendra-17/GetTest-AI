@@ -68,7 +68,7 @@ const SAMPLE_QUESTIONS = [
 const FAQS = [
   {
     q: 'How does GetTest AI generate questions from my PDF?',
-    a: 'Our backend uses FastAPI and PyPDF2 to parse and clean text from your uploaded document. The content is then analyzed by an advanced language model (Mistral AI) to synthesize context-aware multiple-choice questions matching standard exam formats.',
+    a: 'Our backend uses FastAPI and PyPDF2 to parse and clean text from your uploaded document. The content is then analyzed by an advanced language model to synthesize context-aware multiple-choice questions matching standard exam formats.',
   },
   {
     q: 'Can I customize the question count and test timer?',
@@ -352,9 +352,6 @@ const Home = () => {
           <h2 className="text-3xl sm:text-4xl font-extrabold text-slate-900">
             How GetTest AI Converts Study Material into Tests
           </h2>
-          <p className="text-sm sm:text-base text-slate-600 mt-2">
-            Engineered with FastAPI, Mistral AI, and PyPDF2 to deliver precision exam questions in real time.
-          </p>
         </div>
 
         {/* 4 Interactive Steps */}
@@ -370,9 +367,9 @@ const Home = () => {
             {
               step: '02',
               title: 'Neural MCQ Synthesis',
-              desc: 'Mistral AI analyzes key concepts, distractor options, and formats questions strictly per exam patterns.',
+              desc: 'Our AI analyzes key concepts, distractor options, and formats questions strictly per exam patterns.',
               icon: <FiZap className="text-amber-500 text-xl" />,
-              badge: 'Mistral LLM',
+              badge: 'Our AI',
             },
             {
               step: '03',
@@ -718,9 +715,6 @@ const Home = () => {
                 className="rounded-2xl max-h-[60vh] w-auto object-contain border border-slate-200 shadow-sm"
               />
             </div>
-            <p className="text-xs text-slate-500 text-center">
-              Full workflow: User Auth → PDF Upload → FastAPI + PyPDF2 → Mistral AI Generation → React Test UI → Scorecard & Analytics.
-            </p>
           </div>
         </div>
       )}

@@ -14,6 +14,7 @@ import PaymentPlans from './pages/PaymentPlans'
 import PaymentSuccess from './pages/PaymentSuccess'
 import PaymentFailure from './pages/PaymentFailure'
 import About from './pages/About';
+import { Analytics } from "@vercel/analytics/react"
 
 const App = () => {
   return (
@@ -35,6 +36,7 @@ const App = () => {
           <Route path='/payment-failure' element = {<PaymentFailure />}></Route>
         </Routes>
       </Router>
+      <Analytics />
     </div>
   )
 }

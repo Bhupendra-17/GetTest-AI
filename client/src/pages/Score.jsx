@@ -8,6 +8,13 @@ import { FiCheckCircle, FiXCircle, FiClock, FiAward, FiArrowRight } from "react-
 
 const CHART_COLORS = ["#10b981", "#ef4444", "#cbd5e1"];
 
+const formatQuestionNumbers = (numbers) => {
+  const visibleNumbers = numbers.slice(0, 5).map((number) => `Q${number}`).join(", ");
+  return numbers.length > 5
+    ? `${visibleNumbers}, and ${numbers.length - 5} more`
+    : visibleNumbers;
+};
+
 export default function Score() {
   const location = useLocation();
   const { questions = [], answers = {}, timeTaken = 0 } = location.state || {};
@@ -26,7 +33,16 @@ export default function Score() {
   }).length;
 
   const incorrectAnswers = questions.length - correctAnswers - notAttempted;
+  const answeredCount = questions.length - notAttempted;
   const accuracy = questions.length > 0 ? Math.round((correctAnswers / questions.length) * 100) : 0;
+  const incorrectQuestionNumbers = questions.flatMap((q, idx) => {
+    const selected = (answers[idx] || "").toString().trim().slice(0, 1);
+    return selected && selected !== q.answer ? [idx + 1] : [];
+  });
+  const skippedQuestionNumbers = questions.flatMap((_, idx) => {
+    const selected = (answers[idx] || "").toString().trim();
+    return selected ? [] : [idx + 1];
+  });
 
   const chartData = [
     { name: "Correct", value: correctAnswers },
@@ -161,6 +177,53 @@ export default function Score() {
               </div>
             </div>
           </div>
+
+          {/* Actionable performance insights */}
+          <section className="pt-6 border-t border-slate-100">
+            <h2 className="text-lg font-bold text-slate-900 mb-4">Performance analysis</h2>
+            <div className="grid sm:grid-cols-2 gap-4">
+              <article className="rounded-2xl border border-emerald-200 bg-emerald-50/60 p-5">
+                <h3 className="flex items-center gap-2 font-bold text-emerald-900">
+                  <FiCheckCircle className="shrink-0 text-emerald-600" />
+                  Strong points
+                </h3>
+                <ul className="mt-3 list-disc space-y-2 pl-5 text-sm leading-relaxed text-emerald-950">
+                  <li>
+                    {correctAnswers > 0
+                      ? `${correctAnswers} of ${questions.length} answers were correct (${accuracy}% accuracy).`
+                      : "You completed the test and now have a clear baseline to learn from."}
+                  </li>
+                  <li>
+                    You attempted {answeredCount} of {questions.length} questions.
+                  </li>
+                </ul>
+              </article>
+
+              <article className="rounded-2xl border border-amber-200 bg-amber-50/70 p-5">
+                <h3 className="flex items-center gap-2 font-bold text-amber-950">
+                  <FiXCircle className="shrink-0 text-amber-700" />
+                  Where to improve
+                </h3>
+                <ul className="mt-3 list-disc space-y-2 pl-5 text-sm leading-relaxed text-amber-950">
+                  {incorrectQuestionNumbers.length > 0 && (
+                    <li>
+                      Review {formatQuestionNumbers(incorrectQuestionNumbers)}; the correct options are highlighted below.
+                    </li>
+                  )}
+                  {skippedQuestionNumbers.length > 0 && (
+                    <li>
+                      Try {formatQuestionNumbers(skippedQuestionNumbers)} next time. Mark difficult questions for review and return to them before submitting.
+                    </li>
+                  )}
+                  {incorrectQuestionNumbers.length === 0 && skippedQuestionNumbers.length === 0 && (
+                    <li>
+                      No answers were missed. Keep practicing varied questions to maintain this accuracy.
+                    </li>
+                  )}
+                </ul>
+              </article>
+            </div>
+          </section>
 
           {/* Item-by-Item Diagnostics */}
           <div className="pt-6 border-t border-slate-100">

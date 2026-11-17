@@ -202,7 +202,7 @@ const Main = () => {
               },
               {
                 icon: <FiCpu className="text-amber-500 text-2xl" />,
-                title: "Fast Mistral Pipeline",
+                title: "Fast AI Pipeline",
                 desc: "High-throughput inference generates complete question papers in seconds.",
               },
               {
